@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Головна — Вчитель</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>👨‍🏫 Вчитель</h2>
+            <ul class="menu">
+                <li><a href="#">📅 Мій розклад</a></li>
+                <li><a href="#">👨‍🎓 Учні мого класу</a></li>
+                <li><a href="#">📝 Виставити оцінки</a></li>
+                <li><a href="#">✏️ Редагувати оцінки</a></li>
+                <li><a href="#">💬 Коментарі до оцінок</a></li>
+                <li><a href="#">📚 Домашні завдання</a></li>
+                <li><a href="#">✏️ Редагувати ДЗ</a></li>
+                <li><a href="#">🗑️ Видалити ДЗ</a></li>
+                <li><a href="#">✅ Відвідуваність</a></li>
+                <li><a href="#">📖 Журнал учня</a></li>
+                <li><a href="#">📨 Надіслати батькам</a></li>
+                <li><a href="#">📥 Отримати від батьків</a></li>
+                <li><a href="#">🖊️ Підписи в щоденнику</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Ласкаво просимо, {{ teacher_name }}!</h1>
+            <p>Оберіть дію зліва у меню.</p>
+        </main>
+    </div>
+</body>
+</html>
