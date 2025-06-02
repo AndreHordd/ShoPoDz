@@ -5,6 +5,7 @@ from app.utils.auth_utils import verify_user_credentials
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -15,13 +16,14 @@ def login():
         if user and verify_user_credentials(user, password):
             session['user_id'] = user.user_id
             session['role'] = user.role
-            flash('✅ Вхід успішний', 'success')
+            session['username'] = user.email
+            print("✅ Успішний вхід:", user.email, user.role)
             return redirect(url_for('redirect_by_role'))
         else:
-            flash('❌ Невірна пошта або пароль', 'danger')
+            print("❌ Авторизація не пройшла:", email)
+            flash('Невірна пошта або пароль', 'danger')
 
     return render_template('auth/login.html')
-
 
 @auth_bp.route('/logout')
 def logout():

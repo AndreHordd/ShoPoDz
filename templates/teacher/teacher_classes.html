@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>👨‍🏫 Мої класи</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
+</head>
+<body>
+<div class="container">
+    <aside class="sidebar">
+        <h2>👨‍🏫 Вчитель</h2>
+        <ul class="menu">
+            <li><a href="{{ url_for('teacher.dashboard') }}">🏠 Головна</a></li>
+            <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
+            <!-- інші вкладки -->
+        </ul>
+    </aside>
+
+    <main class="content">
+        <h1>Мої класи</h1>
+        {% if classes %}
+            <ul>
+                {% for cls in classes %}
+                    <li><strong>{{ cls.class_number }}{{ cls.subclass }}</strong> — класний керівник: {{ cls.class_teacher }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Ви не закріплені за жодним класом.</p>
+        {% endif %}
+    </main>
+</div>
+</body>
+</html>
