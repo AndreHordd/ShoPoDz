@@ -3,6 +3,9 @@ from app.config import Config
 from app.models import db
 from app.api.auth import auth_bp
 from app.api.teachers import teacher_bp
+from app.api.admin import admin_bp
+from app.api.parents import parent_bp
+from app.api.students import student_bp
 
 def create_app():
     app = Flask(__name__)
@@ -14,6 +17,9 @@ def create_app():
     # Реєстрація маршрутів
     app.register_blueprint(auth_bp)
     app.register_blueprint(teacher_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(parent_bp)
+    app.register_blueprint(student_bp)
 
     # Головна сторінка → форма авторизації
     @app.route('/')
@@ -31,11 +37,11 @@ def create_app():
         if role == 'teacher':
             return redirect(url_for('teacher.dashboard'))
         elif role == 'admin':
-            return '👑 Панель адміністратора (заглушка)'
+            return redirect(url_for('admin.admin_dashboard'))
         elif role == 'student':
-            return '🎓 Панель учня (заглушка)'
+            return redirect(url_for('student.student_dashboard'))
         elif role == 'parent':
-            return '👪 Панель батьків (заглушка)'
+            return redirect(url_for('parent.parent_dashboard'))
         else:
             return '❌ Невідома роль'
 
