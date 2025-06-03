@@ -4,26 +4,70 @@
     <meta charset="UTF-8">
     <title>👨‍🏫 Мої класи</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
+    <script src="{{ url_for('static', filename='js/teacher_classes.js') }}" defer></script>
+    <style>
+        .class-button {
+            background: #3177c6;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            margin: 10px 10px 0 0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .class-button:hover {
+            background: #24599e;
+        }
+        .students-list {
+            display: none;
+            margin-top: 10px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <aside class="sidebar">
         <h2>👨‍🏫 Вчитель</h2>
         <ul class="menu">
-            <li><a href="{{ url_for('teacher.dashboard') }}">🏠 Головна</a></li>
-            <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
-            <!-- інші вкладки -->
-        </ul>
+                <li><a href="#">📅 Мій розклад</a></li>
+                <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
+                <li><a href="#">📝 Виставити оцінки</a></li>
+                <li><a href="#">📚 Домашні завдання</a></li>
+                <li><a href="#">✅ Відвідуваність</a></li>
+                <li><a href="#">📖 Журнал учня</a></li>
+                <li><a href="#">📨 Месенджер</a></li>
+                <li><a href="#">🖊️ Підписи в щоденнику</a></li>
+            </ul>
     </aside>
 
     <main class="content">
         <h1>Мої класи</h1>
         {% if classes %}
-            <ul>
-                {% for cls in classes %}
-                    <li><strong>{{ cls.class_number }}{{ cls.subclass }}</strong> — класний керівник: {{ cls.class_teacher }}</li>
-                {% endfor %}
-            </ul>
+            {% for cls in classes %}
+                <div class="class-container" data-class-id="{{ cls.class_id }}">
+                    <button type="button" class="class-button">
+                        {{ cls.class_number }}{{ cls.subclass }}
+                    </button>
+                    <div class="students-list" id="students-{{ cls.class_id }}">
+    {% if cls.students %}
+        <ol>
+            {% for student in cls.students %}
+                <li>{{ student.last_name }} {{ student.first_name }}</li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <p>У цьому класі поки що немає учнів.</p>
+    {% endif %}
+</div>
+
+                </div>
+            {% endfor %}
         {% else %}
             <p>Ви не закріплені за жодним класом.</p>
         {% endif %}
