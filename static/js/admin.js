@@ -153,8 +153,8 @@ function createSchedule(classId, className, classNumber) {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            alert('✅ Розклад збережено!');
-                            showClassSelector();
+                            // одразу показуємо розклад без alert
+                            loadSchedule(classId, className, classNumber);
                         } else {
                             alert('❌ Помилка збереження: ' + data.error);
                         }
