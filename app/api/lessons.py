@@ -82,3 +82,12 @@ def get_lessons(class_id):
             result[day][lesson_index] = subject
 
     return jsonify(result)
+
+@lesson_bp.route('/api/lessons/delete/<int:class_id>', methods=['DELETE'])
+def delete_schedule(class_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM lessons WHERE class_id = %s", (class_id,))
+    conn.commit()
+    cur.close()
+    return jsonify({"success": True})
