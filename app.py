@@ -9,6 +9,9 @@ from app.api.teachers import teacher_bp
 from app.api.admin import admin_bp
 from app.api.students import student_bp
 from app.api.parents import parent_bp
+from app.api.classes import class_bp
+from app.api.subjects import subject_bp
+from app.api.lessons import lesson_bp
 
 
 def create_app():
@@ -24,7 +27,9 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(student_bp)
     app.register_blueprint(parent_bp)
-
+    app.register_blueprint(class_bp)
+    app.register_blueprint(subject_bp)
+    app.register_blueprint(lesson_bp)
 
     # Головна сторінка → форма авторизації
     @app.route('/')

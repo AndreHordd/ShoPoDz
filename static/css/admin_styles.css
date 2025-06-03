@@ -176,3 +176,32 @@ button:hover {
         gap: 4px;
     }
 }
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.schedule-table th,
+.schedule-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+
+.schedule-table th {
+    background-color: #f0f4f8;
+    font-weight: bold;
+    color: #17477d;
+}
+
+.schedule-table td {
+    font-size: 0.95rem;
+}
+
+.button-row {
+    margin-top: 24px;       /* відступ зверху від таблиці */
+    display: flex;
+    gap: 12px;
+    justify-content: left; /* центрує кнопки під таблицею */
+}

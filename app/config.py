@@ -10,6 +10,8 @@ class Config:
         'postgresql://postgres:vladhulko2006@localhost/shopodz'
     )
 
+    DB_URL = SQLALCHEMY_DATABASE_URI  # 🔥 Додаємо сюди!
+
     # Вимикає попередження SQLAlchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

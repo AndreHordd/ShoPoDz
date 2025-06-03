@@ -6,3 +6,6 @@ def get_classes_by_teacher_id(teacher_id):
         .filter(Class.class_teacher_id == teacher_id)
         .all()
     )
+
+def get_all_classes():
+    return db.session.query(Class).all()
