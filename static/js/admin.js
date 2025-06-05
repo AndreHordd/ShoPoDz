@@ -118,62 +118,95 @@ function createSchedule(classId, className, classNumber, isEdit = false, existin
         return;
     }
 
-    fetch(`/api/subjects/for-class/${classNumber}`)
-        .then(res => res.json())
-        .then(subjects => {
-            let formHTML = `
-                <section class="dashboard-section">
-                    <h2>${isEdit ? 'Редагування' : 'Створення'} розкладу для ${className}</h2>
-                    <form id="schedule-form">
-                        <input type="hidden" name="class_id" value="${classId}">
-            `;
+    Promise.all([
+        fetch(`/api/subjects/for-class/${classNumber}`).then(res => res.json()),
+        fetch(`/teacher/api/teachers`).then(res => res.json()),
+        fetch(`/api/rooms`).then(res => res.json()),
+        fetch(`/api/lessons/full/${classId}`).then(res => res.json())
+    ])
+    .then(([subjects, teachers, rooms, fullLessons]) => {
+        let formHTML = `
+            <section class="dashboard-section">
+                <h2>${isEdit ? 'Редагування' : 'Створення'} розкладу для ${className}</h2>
+                <form id="schedule-form">
+                    <input type="hidden" name="class_id" value="${classId}">
+        `;
 
-            days.forEach((day, i) => {
-                formHTML += `<h3>${day}</h3>`;
-                for (let lesson = 1; lesson <= 7; lesson++) {
-                    const selectedValue = isEdit && existingSchedule && existingSchedule[i + 1] && existingSchedule[i + 1][lesson]
-                        ? subjects.find(s => s.title === existingSchedule[i + 1][lesson])?.id || ''
-                        : '';
-                    formHTML += `
-                        <label>Урок ${lesson}:
-                            <select name="day_${i}_lesson_${lesson}">
-                                <option value="">—</option>
-                                ${subjects.map(s => `<option value="${s.id}" ${s.id == selectedValue ? 'selected' : ''}>${s.title}</option>`).join('')}
-                            </select>
-                        </label><br>
-                    `;
-                }
-                formHTML += `<hr>`;
-            });
-
-            formHTML += `<button type="submit">Зберегти розклад</button></form></section>`;
-            content.innerHTML = formHTML;
-
-            document.getElementById('schedule-form').addEventListener('submit', function (e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-
-                fetch('/api/lessons/create', {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            loadSchedule(classId, className, classNumber);
-                        } else {
-                            alert('❌ Помилка збереження: ' + data.error);
-                        }
-                    })
-                    .catch(err => {
-                        alert('❌ Помилка мережі: ' + err.message);
-                    });
-            });
-        })
-        .catch(err => {
-            alert('❌ Не вдалося завантажити предмети: ' + err.message);
+        days.forEach((day, i) => {
+            formHTML += `<h3>${day}</h3>`;
+            for (let lesson = 1; lesson <= 7; lesson++) {
+                const key = `${i + 1}_${lesson}`;
+                const entry = fullLessons[key] || {};
+                formHTML += `
+                    <label>Урок ${lesson}:
+                        <select name="day_${i}_lesson_${lesson}">
+                            <option value="">—</option>
+                            ${subjects.map(s => `<option value="${s.id}" ${s.id == entry.subject_id ? 'selected' : ''}>${s.title}</option>`).join('')}
+                        </select>
+                        Вчитель:
+                        <select name="teacher_day_${i}_lesson_${lesson}">
+                            <option value="">—</option>
+                            ${teachers.map(t => `<option value="${t.id}" ${t.id == entry.teacher_id ? 'selected' : ''}>${t.name}</option>`).join('')}
+                        </select>
+                        Кабінет:
+                        <select name="room_day_${i}_lesson_${lesson}">
+                            <option value="">—</option>
+                            ${rooms.map(r => `<option value="${r.id}" ${r.id == entry.room_id ? 'selected' : ''}>${r.number}</option>`).join('')}
+                        </select>
+                    </label><br>
+                `;
+            }
+            formHTML += `<hr>`;
         });
+
+        formHTML += `<button type="submit">Зберегти розклад</button></form></section>`;
+        content.innerHTML = formHTML;
+
+        document.getElementById('schedule-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Перевірка на неповне заповнення
+            let hasError = false;
+            for (let day = 0; day < 5; day++) {
+                for (let lesson = 1; lesson <= 7; lesson++) {
+                    const subj = this[`day_${day}_lesson_${lesson}`].value;
+                    const teach = this[`teacher_day_${day}_lesson_${lesson}`].value;
+                    const room = this[`room_day_${day}_lesson_${lesson}`].value;
+                    const countFilled = [subj, teach, room].filter(val => val !== "").length;
+                    if (countFilled > 0 && countFilled < 3) {
+                        alert(`❌ Помилка: для ${days[day]}, уроку ${lesson} заповніть і предмет, і вчителя, і кабінет.`);
+                        hasError = true;
+                        break;
+                    }
+                }
+                if (hasError) break;
+            }
+            if (hasError) return;
+
+            // Відправка форми
+            const formData = new FormData(this);
+            fetch('/api/lessons/create', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadSchedule(classId, className, classNumber);
+                } else {
+                    alert('❌ Помилка збереження: ' + data.error);
+                }
+            })
+            .catch(err => {
+                alert('❌ Помилка мережі: ' + err.message);
+            });
+        });
+    })
+    .catch(err => {
+        alert('❌ Не вдалося завантажити дані: ' + err.message);
+    });
 }
+
 
 function deleteSchedule(classId, className, classNumber) {
     const confirmDelete = confirm(`Видалити розклад для ${className}?`);

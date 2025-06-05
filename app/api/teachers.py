@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, jsonify
 from app.dao.classes_dao import get_classes_by_teacher_id
 from app.services.class_service import get_students_by_class_id
+from app.utils.db import get_db
+
 
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/teacher')
 
@@ -31,3 +33,14 @@ def students_by_class(class_id):
 
     students = get_students_by_class_id(class_id)
     return render_template('teacher/teacher_students.html', students=students)
+
+@teacher_bp.route('/api/teachers')
+def get_teachers():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT user_id, first_name, last_name FROM teachers")
+    rows = cur.fetchall()
+    cur.close()
+
+    result = [{"id": t_id, "name": f"{name} {surname}"} for t_id, name, surname in rows]
+    return jsonify(result)
