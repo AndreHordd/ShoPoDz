@@ -2,7 +2,9 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector('a[href="#schedules"]').addEventListener('click', showClassSelector);
+    document.querySelector('a[href="#classes"]').addEventListener('click', showClassManagement);
 });
+
 
 function showClassSelector() {
     const content = document.getElementById('main-content');
@@ -225,5 +227,155 @@ function deleteSchedule(classId, className, classNumber) {
         .catch(err => {
             alert('❌ Помилка мережі: ' + err.message);
         });
+    }
+}
+
+function showClassManagement() {
+    const content = document.getElementById('main-content');
+
+    fetch('/api/classes')
+        .then(res => res.json())
+        .then(classes => {
+            let html = `
+                <section class="dashboard-section">
+                    <h2>Класи</h2>
+                    <div style="margin-bottom: 20px;">
+                        <button class="btn-primary" onclick="showAddClassForm()">➕ Створити клас</button>
+                    </div>
+            `;
+
+            if (classes.length === 0) {
+                html += `<p>Класів поки що немає.</p>`;
+            } else {
+                html += `
+                    <table class="class-table">
+                        <thead>
+                            <tr>
+                                <th>Клас</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${classes.map(c => `
+                                <tr>
+                                    <td>${c.name}</td>
+                                    <td>
+                                        <button class="btn-small" onclick="showEditClassForm(${c.id}, '${c.name}')">✏️ Редагувати</button>
+                                        <button class="btn-small red" onclick="deleteClass(${c.id})">🗑️ Видалити</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            html += `</section>`;
+            content.innerHTML = html;
+        });
+}
+
+
+function showAddClassForm() {
+    const content = document.getElementById('main-content');
+
+    fetch('/teacher/api/teachers')
+        .then(res => res.json())
+        .then(teachers => {
+            const teacherOptions = teachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+
+            content.innerHTML = `
+                <section class="dashboard-section">
+                    <h2>Додати клас</h2>
+                    <label>Номер класу: <input id="class-number" type="number" placeholder="Наприклад, 10"></label><br><br>
+                    <label>Буква: <input id="subclass" type="text" placeholder="Наприклад, А" maxlength="1"></label><br><br>
+                    <label>Класний керівник:
+                        <select id="class-teacher-id">
+                            <option value="">-- Оберіть вчителя --</option>
+                            ${teacherOptions}
+                        </select>
+                    </label><br><br>
+                    <button onclick="addClass()">Зберегти</button>
+                    <button onclick="showClassManagement()">Назад</button>
+                </section>
+            `;
+        });
+}
+
+
+function addClass() {
+    const number = document.getElementById('class-number').value;
+    const subclass = document.getElementById('subclass').value;
+    const teacherId = document.getElementById('class-teacher-id').value;
+
+    if (!number || !subclass || !teacherId) {
+        alert("❌ Заповніть усі поля для створення класу.");
+        return;
+    }
+
+    fetch('/api/classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            class_number: number,
+            subclass: subclass,
+            class_teacher_id: teacherId
+        })
+    }).then(() => showClassManagement());
+}
+
+
+function showEditClassForm(id, currentName) {
+    const [number, subclass] = currentName.split("-");
+
+    fetch('/teacher/api/teachers')
+        .then(res => res.json())
+        .then(teachers => {
+            const content = document.getElementById('main-content');
+            let teacherOptions = teachers.map(t =>
+                `<option value="${t.id}">${t.name}</option>`).join('');
+
+            content.innerHTML = `
+                <section class="dashboard-section">
+                    <h2>Редагувати клас</h2>
+                    <label>Номер класу: <input id="edit-class-number" value="${number}" type="number"></label><br><br>
+                    <label>Буква: <input id="edit-subclass" value="${subclass}" maxlength="1"></label><br><br>
+                    <label>Класний керівник:
+                        <select id="edit-class-teacher-id">
+                            ${teacherOptions}
+                        </select>
+                    </label><br><br>
+                    <button onclick="editClass(${id})">Зберегти</button>
+                    <button onclick="showClassManagement()">Назад</button>
+                </section>
+            `;
+        });
+}
+
+function editClass(id) {
+    const number = document.getElementById('edit-class-number').value;
+    const subclass = document.getElementById('edit-subclass').value;
+    const teacherId = document.getElementById('edit-class-teacher-id').value;
+
+    if (!number || !subclass || !teacherId) {
+        alert("❌ Заповніть усі поля для редагування класу.");
+        return;
+    }
+
+    fetch(`/api/classes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            class_number: number,
+            subclass: subclass,
+            class_teacher_id: teacherId
+        })
+    }).then(() => showClassManagement());
+}
+
+function deleteClass(id) {
+    if (confirm("Ви впевнені, що хочете видалити цей клас?")) {
+        fetch(`/api/classes/${id}`, { method: 'DELETE' })
+            .then(() => showClassManagement());
     }
 }

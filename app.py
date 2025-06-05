@@ -1,7 +1,5 @@
 from flask import Flask, session, redirect, url_for
 
-from app.api.admin import admin_bp
-from app.api.students import student_bp
 from app.config import Config
 from app.models import db
 from app.api.auth import auth_bp

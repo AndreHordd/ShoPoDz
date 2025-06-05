@@ -205,3 +205,39 @@ button:hover {
     gap: 12px;
     justify-content: left; /* центрує кнопки під таблицею */
 }
+
+.class-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.class-table th, .class-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.btn-primary {
+    background-color: #1d4e89;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-small {
+    padding: 6px 10px;
+    font-size: 14px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    background-color: #eee;
+    cursor: pointer;
+}
+
+.btn-small.red {
+    background-color: #d9534f;
+    color: white;
+}
