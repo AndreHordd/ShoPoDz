@@ -11,6 +11,7 @@ from app.api.classes import class_bp
 from app.api.subjects import subject_bp
 from app.api.lessons import lesson_bp
 from app.api.rooms import room_bp
+from app.api.announcements import announcement_bp
 
 
 def create_app():
@@ -30,6 +31,7 @@ def create_app():
     app.register_blueprint(subject_bp)
     app.register_blueprint(lesson_bp)
     app.register_blueprint(room_bp)
+    app.register_blueprint(announcement_bp)
 
     # Головна сторінка → форма авторизації
     @app.route('/')

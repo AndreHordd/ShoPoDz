@@ -3,6 +3,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector('a[href="#schedules"]').addEventListener('click', showClassSelector);
     document.querySelector('a[href="#classes"]').addEventListener('click', showClassManagement);
+    document.querySelector('a[href="#announcements"]').addEventListener('click', showAnnouncements);
 });
 
 
@@ -84,8 +85,8 @@ function loadSchedule(classId, className, classNumber) {
                         </tbody>
                     </table>
                     <div class="button-row" style="margin-top: 20px;">
-                        <button id="edit-btn">Редагувати розклад</button>
-                        <button onclick="deleteSchedule('${classId}', '${className}', '${classNumber}')">Видалити розклад</button>
+                        <button class="btn-small" id="edit-btn">✏️ Редагувати розклад</button>
+                        <button class="btn-small red" onclick="deleteSchedule('${classId}', '${className}', '${classNumber}')">🗑️ Видалити розклад</button>
                     </div>
                 `;
 
@@ -97,7 +98,7 @@ function loadSchedule(classId, className, classNumber) {
             } else {
                 html += `
                     <div class="button-row" style="margin-top: 20px;">
-                        <button onclick="createSchedule('${classId}', '${className}', '${classNumber}', false, null)">Створити розклад</button>
+                        <button onclick="createSchedule('${classId}', '${className}', '${classNumber}', false, null)">➕ Створити розклад</button>
                     </div>
                 `;
                 content.innerHTML = html;
@@ -377,5 +378,128 @@ function deleteClass(id) {
     if (confirm("Ви впевнені, що хочете видалити цей клас?")) {
         fetch(`/api/classes/${id}`, { method: 'DELETE' })
             .then(() => showClassManagement());
+    }
+}
+
+function showAnnouncements() {
+    const content = document.getElementById('main-content');
+    fetch('/api/announcements')
+        .then(res => res.json())
+        .then(announcements => {
+            let html = `
+                <section class="dashboard-section">
+                    <h2>Оголошення</h2>
+                    <button class="create-button" onclick="showAddAnnouncementForm()">➕ Створити оголошення</button>
+                    <div class="announcement-list">
+            `;
+
+            announcements.forEach(a => {
+                html += `
+                    <div class="announcement-card">
+                        <div class="announcement-header">
+                            <strong>${a.title}</strong>
+                            <span class="announcement-date">(${a.created_at})</span>
+                        </div>
+                        <p class="announcement-text">${a.text}</p>
+                        <div class="button-row">
+                            <button class="edit-button" onclick="showEditAnnouncementForm(${a.id}, '${a.title}', \`${a.text.replace(/`/g, '\\`')}\`)">✏️ Редагувати</button>
+                            <button class="delete-button" onclick="deleteAnnouncement(${a.id})">🗑️ Видалити</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </section>
+            `;
+            content.innerHTML = html;
+        });
+}
+
+function showAddAnnouncementForm() {
+    const content = document.getElementById('main-content');
+    content.innerHTML = `
+        <section class="dashboard-section">
+            <h2>Нове оголошення</h2>
+            <label>Заголовок: <input id="announcement-title"></label><br>
+            <label>Текст: <textarea id="announcement-text"></textarea></label><br>
+            <button onclick="addAnnouncement()">Зберегти</button>
+            <button onclick="showAnnouncements()">Назад</button>
+        </section>
+    `;
+}
+
+function addAnnouncement() {
+    const title = document.getElementById('announcement-title').value.trim();
+    const text = document.getElementById('announcement-text').value.trim();
+
+    if (!title || !text) {
+        alert("❗ Заповніть усі поля");
+        return;
+    }
+
+    fetch('/api/announcements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, text })
+    }).then(res => res.json())
+      .then(data => {
+          if (data.success) {
+              showAnnouncements();
+          } else {
+              alert("❌ Помилка: " + data.error);
+          }
+      });
+}
+
+function showEditAnnouncementForm(id, currentTitle, currentText) {
+    const content = document.getElementById('main-content');
+    content.innerHTML = `
+        <section class="dashboard-section">
+            <h2>Редагування оголошення</h2>
+            <label>Заголовок: <input id="edit-title" value="${currentTitle}"></label><br>
+            <label>Текст: <textarea id="edit-text">${currentText}</textarea></label><br>
+            <button onclick="editAnnouncement(${id})">Зберегти</button>
+            <button onclick="showAnnouncements()">Назад</button>
+        </section>
+    `;
+}
+
+function editAnnouncement(id) {
+    const title = document.getElementById('edit-title').value.trim();
+    const text = document.getElementById('edit-text').value.trim();
+
+    if (!title || !text) {
+        alert("❗ Заповніть усі поля");
+        return;
+    }
+
+    fetch(`/api/announcements/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, text })
+    }).then(res => res.json())
+      .then(data => {
+          if (data.success) {
+              showAnnouncements();
+          } else {
+              alert("❌ Помилка: " + data.error);
+          }
+      });
+}
+
+function deleteAnnouncement(id) {
+    if (confirm("Ви дійсно хочете видалити це оголошення?")) {
+        fetch(`/api/announcements/${id}`, {
+            method: 'DELETE'
+        }).then(res => res.json())
+          .then(data => {
+              if (data.success) {
+                  showAnnouncements();
+              } else {
+                  alert("❌ Помилка при видаленні");
+              }
+          });
     }
 }

@@ -233,11 +233,86 @@ button:hover {
     margin-right: 5px;
     border: none;
     border-radius: 4px;
-    background-color: #eee;
+    background-color: #1c9c95;
     cursor: pointer;
 }
 
 .btn-small.red {
     background-color: #d9534f;
     color: white;
+}
+.announcement-card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+}
+
+.announcement-header {
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.announcement-date {
+    font-size: 0.9em;
+    color: gray;
+    margin-left: 10px;
+}
+
+.announcement-text {
+    margin: 10px 0;
+    font-size: 1em;
+}
+
+.button-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.edit-button {
+    background-color: #e0e0e0;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #444;
+    font-weight: bold;
+}
+
+.edit-button:hover {
+    background-color: #cfcfcf;
+}
+
+.delete-button {
+    background-color: #d9534f;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+}
+
+.delete-button:hover {
+    background-color: #c9302c;
+}
+
+.create-button {
+    background-color: #0069d9;
+    border: none;
+    padding: 10px 16px;
+    color: white;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.create-button:hover {
+    background-color: #0053b3;
 }
