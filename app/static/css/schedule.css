@@ -1,0 +1,145 @@
+body {
+    background: #f9f4ea;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 235px;
+    background: #6b4e71;
+    color: #fff;
+    padding: 2rem 1.2rem 1.2rem 1.2rem;
+    box-shadow: 2px 0 12px rgba(107,78,113,0.13);
+    min-height: 100vh;
+}
+
+.sidebar h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2.2rem;
+    letter-spacing: 0.5px;
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu li {
+    margin-bottom: 0.95rem;
+    border-radius: 6px;
+}
+
+.menu li.active, .menu li:hover {
+    background: #8a6d8c;
+}
+
+.menu a {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.72rem 1rem;
+    border-radius: 6px;
+    transition: background 0.13s;
+}
+
+.menu li.active a {
+    font-weight: 700;
+}
+
+.content {
+    flex: 1;
+    padding: 2.5rem 2rem;
+    background: #f9f4ea;
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(107,78,113,0.10);
+    padding: 1.8rem 1.2rem 1.1rem 1.2rem;
+    margin: 1.5rem auto 0 auto;
+    max-width: 1080px;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 1.09rem;
+    background: #fff;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+}
+
+.schedule-table thead tr {
+    background: linear-gradient(90deg, #f4a261 60%, #e76f51 100%);
+}
+
+.schedule-table th {
+    color: #fff;
+    font-weight: 700;
+    padding: 1rem 1.1rem;
+    border: none;
+    text-align: center;
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+}
+
+.schedule-table td {
+    padding: 0.8rem 1.1rem;
+    border: none;
+    background: #f8f1e9;
+    text-align: center;
+    font-size: 0.99rem;
+    color: #473b48;
+    vertical-align: middle;
+    transition: background 0.15s;
+}
+
+.schedule-table tbody tr {
+    border-radius: 6px;
+}
+
+.schedule-table tbody tr:nth-child(even) td {
+    background: #f1e6dc;
+}
+
+.schedule-table tbody tr:hover td {
+    background: #ecd8c6;
+    color: #6b4e71;
+}
+
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        min-height: unset;
+    }
+    .content {
+        padding: 1.3rem;
+    }
+}
+
+@media (max-width: 700px) {
+    .schedule-card {
+        padding: 0.7rem 0.2rem 0.5rem 0.2rem;
+    }
+    .content {
+        padding: 0.7rem 0.3rem;
+    }
+    .schedule-table th, .schedule-table td {
+        padding: 0.42rem 0.13rem;
+        font-size: 0.89rem;
+    }
+}

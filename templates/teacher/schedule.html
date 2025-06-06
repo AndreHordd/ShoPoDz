@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>📅 Мій розклад</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
+
+</head>
+<body>
+<div class="container">
+    <aside class="sidebar">
+        <h2>👨‍🏫 Вчитель</h2>
+        <ul class="menu">
+            <li class="active"><a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a></li>
+            <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
+            <li><a href="#">📝 Виставити оцінки</a></li>
+            <li><a href="#">📚 Домашні завдання</a></li>
+            <li><a href="#">✅ Відвідуваність</a></li>
+            <li><a href="#">📖 Журнал учня</a></li>
+            <li><a href="#">📨 Месенджер</a></li>
+            <li><a href="#">🖊️ Підписи в щоденнику</a></li>
+        </ul>
+    </aside>
+
+    <main class="content">
+        <h1>Мій розклад</h1>
+        <div class="schedule-card">
+            <table class="schedule-table">
+                <thead>
+                <tr>
+                    <th>День</th><th>Початок</th><th>Кінець</th>
+                    <th>Клас</th><th>Предмет</th><th>Кабінет</th>
+                </tr>
+                </thead>
+                <tbody id="schedule-body">
+                {% for row in lessons %}
+                    <tr>
+                        <td>{{ ["","Понеділок","Вівторок","Середа","Четвер","Пʼятниця","Субота","Неділя"][row.day] }}</td>
+                        <td>{{ row.start_time }}</td>
+                        <td>{{ row.end_time }}</td>
+                        <td>{{ row.class }}</td>
+                        <td>{{ row.subject }}</td>
+                        <td>{{ row.room_number }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='js/teacher_schedule.js') }}"></script>
+</body>
+</html>

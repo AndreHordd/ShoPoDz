@@ -12,6 +12,8 @@ from app.api.subjects import subject_bp
 from app.api.lessons import lesson_bp
 from app.api.rooms import room_bp
 from app.api.announcements import announcement_bp
+from flask import Flask, session, redirect, url_for, render_template  # ← + render_template
+from app.dao.lessons_dao import get_teacher_schedule                 # ← + ця функція
 
 
 def create_app():
@@ -32,6 +34,17 @@ def create_app():
     app.register_blueprint(lesson_bp)
     app.register_blueprint(room_bp)
     app.register_blueprint(announcement_bp)
+
+    # ----------- /teacher/schedule -----------------
+    @app.route('/teacher/schedule')
+    def teacher_schedule():
+        # перевірка логіну й ролі
+        if 'user_id' not in session or session.get('role') != 'teacher':
+            return redirect(url_for('auth.login'))
+
+        lessons = get_teacher_schedule(session['user_id'])
+        return render_template('teacher/schedule.html', lessons=lessons)
+
 
     # Головна сторінка → форма авторизації
     @app.route('/')

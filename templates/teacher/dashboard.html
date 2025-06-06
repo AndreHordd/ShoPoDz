@@ -11,7 +11,7 @@
         <aside class="sidebar">
             <h2>👨‍🏫 Вчитель</h2>
             <ul class="menu">
-                <li><a href="#">📅 Мій розклад</a></li>
+                <a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a>
                 <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
                 <li><a href="#">📝 Виставити оцінки</a></li>
                 <li><a href="#">📚 Домашні завдання</a></li>
