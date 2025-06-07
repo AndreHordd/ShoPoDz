@@ -14,6 +14,10 @@ from app.api.rooms import room_bp
 from app.api.announcements import announcement_bp
 from flask import Flask, session, redirect, url_for, render_template  # ← + render_template
 from app.dao.lessons_dao import get_teacher_schedule                 # ← + ця функція
+from app.api.homework import homework_bp
+from datetime import timedelta
+def add_days(date_obj, days):
+    return date_obj + timedelta(days=days)
 
 
 def create_app():
@@ -34,6 +38,8 @@ def create_app():
     app.register_blueprint(lesson_bp)
     app.register_blueprint(room_bp)
     app.register_blueprint(announcement_bp)
+
+    app.register_blueprint(homework_bp)
 
     # ----------- /teacher/schedule -----------------
     @app.route('/teacher/schedule')
@@ -70,6 +76,7 @@ def create_app():
         else:
             return '❌ Невідома роль'
 
+    app.jinja_env.filters['add_days'] = add_days
     return app
 
 # Для запуску напряму

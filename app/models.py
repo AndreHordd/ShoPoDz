@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.postgresql import VARCHAR
 
 db = SQLAlchemy()
 
@@ -28,3 +27,30 @@ class Student(db.Model):
     middle_name = db.Column(db.String(100))
     class_id = db.Column(db.Integer, db.ForeignKey('classes.class_id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('parents.user_id'), nullable=False)
+
+class Homework(db.Model):
+    __tablename__ = 'homework'
+    homework_id = db.Column(db.Integer, primary_key=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.lesson_id'), nullable=False)
+    description = db.Column(db.Text)
+    deadline = db.Column(db.DateTime)
+    # НЕ ДОДАВАЙ lesson = db.relationship(...) — backref вже створює lesson в Homework
+
+class Lesson(db.Model):
+    __tablename__ = 'lessons'
+    lesson_id = db.Column(db.Integer, primary_key=True)
+    class_id = db.Column(db.Integer, db.ForeignKey('classes.class_id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.subject_id'), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    room_id = db.Column(db.Integer, db.ForeignKey('rooms.room_id'), nullable=True)
+    day = db.Column(db.SmallInteger, nullable=False)  # 1=Monday, ..., 7=Sunday
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+
+    # В Lesson — тільки тут зв'язок!
+    homeworks = db.relationship("Homework", backref="lesson", lazy=True)
+
+    # опціональні зв'язки:
+    # class_ = db.relationship("Class", backref="lessons")
+    # subject = db.relationship("Subject", backref="lessons")
+    # teacher = db.relationship("User", backref="lessons")  # якщо в users всі вчителі

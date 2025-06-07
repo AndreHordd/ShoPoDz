@@ -1,0 +1,76 @@
+.homework-container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #f9fafc;
+    border-radius: 16px;
+    padding: 30px 32px;
+    box-shadow: 0 8px 32px rgba(34,59,96,0.11);
+}
+
+.hw-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.hw-header button {
+    background: #2e5dbb;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background .2s;
+}
+
+.hw-header button:hover {
+    background: #1749a4;
+}
+
+.hw-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.hw-table th, .hw-table td {
+    border: 1px solid #e3e7ef;
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.hw-table th {
+    background: #e9f1fd;
+    font-weight: 700;
+}
+
+.hw-empty {
+    color: #9ba8be;
+    font-style: italic;
+}
+
+.edit-btn, .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin: 0 5px;
+    color: #3e81e6;
+    transition: color .2s;
+}
+
+.edit-btn:hover, .delete-btn:hover {
+    color: #1749a4;
+}
+
+.disabled {
+    color: #b6bac3;
+    font-size: 1.2rem;
+}

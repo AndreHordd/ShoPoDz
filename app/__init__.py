@@ -1,10 +1,12 @@
 from flask import Flask, jsonify
 import click
+from flask_sqlalchemy import SQLAlchemy
 
+db = SQLAlchemy()
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_object("app.config.Config")
-
+    db.init_app(app)
     # ----- DB helper -----
     from app.utils.db import get_db, close_db
     app.teardown_appcontext(close_db)
@@ -34,3 +36,5 @@ def create_app() -> Flask:
     app.register_blueprint(common_bp)
 
     return app
+
+
