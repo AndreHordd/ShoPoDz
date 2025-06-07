@@ -1,64 +1,162 @@
+/* ==============================
+   Змінні теми
+   ============================== */
+:root {
+  --sidebar-bg: #2c3e50;
+  --sidebar-text: #ecf0f1;
+  --sidebar-hover: #34495e;
+  --content-bg: #ffffff;
+  --body-bg: #f4f6f8;
+  --primary: #2e5dbb;
+  --primary-light: #e9f1fd;
+  --border: #e3e7ef;
+  --text: #2c3e50;
+  --muted: #7f8c8d;
+}
+
+/* ==============================
+   Базові скидання
+   ============================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 body {
-    margin: 0;
-    font-family: "Segoe UI", Tahoma, sans-serif;
-    background-color: #f4f6f8;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background-color: var(--body-bg);
+  color: var(--text);
+  line-height: 1.6;
 }
 
+/* ==============================
+   Контейнер з сайдбаром та контентом
+   ============================== */
 .container {
-    display: flex;
-    height: 100vh;
+  display: flex;
+  min-height: 100vh;
 }
 
+/* ==============================
+   Сайдбар
+   ============================== */
 .sidebar {
-    width: 250px;
-    background-color: #2c3e50;
-    color: white;
-    padding: 20px;
+  flex: 0 0 250px;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
 }
-
 .sidebar h2 {
-    margin-bottom: 20px;
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  letter-spacing: 0.5px;
 }
-
 .menu {
-    list-style: none;
-    padding: 0;
+  list-style: none;
 }
-
 .menu li {
-    margin-bottom: 12px;
+  margin-bottom: 1rem;
 }
-
 .menu a {
-    text-decoration: none;
-    color: #ecf0f1;
-    display: block;
-    padding: 10px 15px;
-    border-radius: 8px;
-    transition: background-color 0.3s;
+  display: block;
+  text-decoration: none;
+  color: var(--sidebar-text);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+.menu a:hover,
+.menu a.active {
+  background-color: var(--sidebar-hover);
 }
 
-.menu a:hover {
-    background-color: #34495e;
-}
-
+/* ==============================
+   Основний контент
+   ============================== */
 .content {
-    flex-grow: 1;
-    padding: 40px;
-    background-color: #ffffff;
+  flex-grow: 1;
+  background-color: var(--content-bg);
+  padding: 2rem 3rem;
+}
+.content h1 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
 }
 
-.content h1 {
-    margin-top: 0;
-    color: #2c3e50;
+/* ==============================
+   Карточка розкладу
+   ============================== */
+.schedule-card {
+  background-color: var(--content-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+
+/* ==============================
+   Таблиця розкладу
+   ============================== */
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+.schedule-table th,
+.schedule-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.schedule-table th {
+  background-color: var(--primary-light);
+  color: var(--text);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.schedule-table tbody tr:nth-child(even) {
+  background-color: #fafbfd;
+}
+.schedule-table tbody tr:hover {
+  background-color: #f1f6fc;
+}
+
+/* ==============================
+   Адаптивність
+   ============================== */
+@media (max-width: 992px) {
+  .sidebar {
+    flex: 0 0 200px;
+    padding: 1.5rem 1rem;
+  }
+  .content {
+    padding: 1.5rem 2rem;
+  }
 }
 
 @media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-    }
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    flex: none;
+  }
+  .schedule-card {
+    padding: 1rem;
+  }
+  .schedule-table {
+    min-width: unset;
+    font-size: 0.9rem;
+  }
+  .schedule-table th,
+  .schedule-table td {
+    padding: 0.5rem 0.75rem;
+  }
 }
