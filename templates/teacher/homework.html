@@ -1,77 +1,84 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <title>Домашні завдання | ShoPoDz</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/homework.css') }}">
+  <meta charset="UTF-8">
+  <title>Домашні завдання | ShoPoDz</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homework.css') }}">
 </head>
-<body>
-<div class="homework-container">
-    <div class="hw-header">
-        <button id="prev-week" onclick="changeWeek(-7)">← Попередній тиждень</button>
-        <span id="week-range">{{ week_start }} — {{ week_end }}</span>
-        <button id="next-week" onclick="changeWeek(7)">Наступний тиждень →</button>
-    </div>
-    {% for day_data in homework_data %}
-        <h4 style="margin: 16px 0 6px 0;">
+<body data-week-start="{{ week_start.isoformat() }}">
+  <div class="container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h2>👨‍🏫 Вчитель</h2>
+      <ul class="menu">
+        <li><a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a></li>
+        <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
+        <li><a href="#">📝 Виставити оцінки</a></li>
+        <li class="active"><a href="{{ url_for('homework.teacher_homework') }}">📚 Домашні завдання</a></li>
+        <li><a href="#">✅ Відвідуваність</a></li>
+        <li><a href="#">📖 Журнал учня</a></li>
+        <li><a href="#">📨 Месенджер</a></li>
+        <li><a href="#">🖊️ Підписи в щоденнику</a></li>
+      </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="homework-content">
+      <div class="homework-container">
+        <div class="hw-header">
+          <button id="prev-week">← Попередній тиждень</button>
+          <span id="week-range">{{ week_start }} — {{ week_end }}</span>
+          <button id="next-week">Наступний тиждень →</button>
+        </div>
+
+        {% for day_data in homework_data %}
+          <h4 style="margin:16px 0 8px">
             {{ day_data.date.strftime('%A, %d.%m') }}
-        </h4>
-        <table class="hw-table">
-            <tr>
-                <th>Клас</th>
-                <th>Урок</th>
-                <th>Домашнє завдання</th>
-                <th>Дії</th>
-            </tr>
-            {% for item in day_data.lessons %}
-            <tr>
-                <td>
-                    {{ item.lesson.class_id }}
-                    <!-- Якщо потрібно — виведи назву класу через звʼязок lesson.class_.class_number і subclass -->
-                </td>
-                <td>
-                    {% if item.lesson.subject_id %}
-                        {{ item.lesson.subject_id }}
-                        <!-- Аналогічно — якщо є lesson.subject.title, виводь його -->
-                    {% else %}
-                        —
-                    {% endif %}
-                </td>
-                <td>
-                    {% if item.homework %}
+          </h4>
+
+          {% if day_data.lessons %}
+            <table class="hw-table">
+              <thead>
+                <tr>
+                  <th>Клас</th>
+                  <th>Урок</th>
+                  <th>Домашнє завдання</th>
+                  <th>Дії</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in day_data.lessons %}
+                  <tr>
+                    <td>{{ item.lesson.class_id }}</td>
+                    <td>{{ item.lesson.subject.title if item.lesson.subject else '—' }}</td>
+                    <td>
+                      {% if item.homework %}
                         {{ item.homework.description }}
-                    {% else %}
+                      {% else %}
                         <span class="hw-empty">-</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if item.date >= current_date %}
-                        {% if item.homework %}
-                            <button class="edit-btn" data-id="{{ item.homework.homework_id }}">✎</button>
-                            <button class="delete-btn" data-id="{{ item.homework.homework_id }}">🗑</button>
-                        {% else %}
-                            <button class="edit-btn" data-lesson="{{ item.lesson.lesson_id }}">Додати</button>
-                        {% endif %}
-                    {% else %}
-                        <span class="disabled">—</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-    {% endfor %}
-</div>
-<script>
-function changeWeek(deltaDays) {
-    const url = new URL(window.location.href);
-    let start = "{{ week_start }}";
-    let newStart = new Date(start);
-    newStart.setDate(newStart.getDate() + deltaDays);
-    let iso = newStart.toISOString().slice(0, 10);
-    url.searchParams.set('week_start', iso);
-    window.location.href = url.toString();
-}
-</script>
-<script src="{{ url_for('static', filename='js/homework.js') }}"></script>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if item.homework %}
+                        <button class="edit-btn"   data-id="{{ item.homework.homework_id }}">✎</button>
+                        <button class="delete-btn" data-id="{{ item.homework.homework_id }}">🗑</button>
+                      {% else %}
+                        <button class="add-btn" data-lesson="{{ item.lesson.lesson_id }}">➕</button>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p class="no-lessons">У цей день у вас немає уроків</p>
+          {% endif %}
+        {% endfor %}
+
+      </div>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/homework.js') }}"></script>
 </body>
 </html>

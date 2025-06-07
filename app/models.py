@@ -2,6 +2,16 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+class Subject(db.Model):
+    __tablename__ = 'subjects'
+
+    subject_id            = db.Column(db.Integer, primary_key=True)
+    title                 = db.Column(db.String(200), nullable=False)
+    first_teaching_grade  = db.Column(db.SmallInteger, nullable=False)
+    last_teaching_grade   = db.Column(db.SmallInteger, nullable=False)
+
+
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -49,7 +59,7 @@ class Lesson(db.Model):
 
     # В Lesson — тільки тут зв'язок!
     homeworks = db.relationship("Homework", backref="lesson", lazy=True)
-
+    subject = db.relationship("Subject", backref="lessons")
     # опціональні зв'язки:
     # class_ = db.relationship("Class", backref="lessons")
     # subject = db.relationship("Subject", backref="lessons")

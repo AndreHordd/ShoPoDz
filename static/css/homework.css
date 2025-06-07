@@ -1,76 +1,169 @@
+/* ==============================
+   Змінні теми
+   ============================== */
+:root {
+  --sidebar-bg: #2c3e50;
+  --sidebar-text: #ecf0f1;
+  --sidebar-hover: #34495e;
+  --content-bg: #ffffff;
+  --body-bg: #f4f6f8;
+  --primary: #2e5dbb;
+  --border: #e3e7ef;
+  --text: #2c3e50;
+  --muted: #7f8c8d;
+}
+
+/* ==============================
+   Базові скидання
+   ============================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background-color: var(--body-bg);
+  color: var(--text);
+}
+
+/* ==============================
+   Основний контейнер
+   ============================== */
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ==============================
+   Сайдбар
+   ============================== */
+.sidebar {
+  flex: 0 0 250px;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 1.5rem;
+}
+.sidebar h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.menu {
+  list-style: none;
+}
+.menu li + li {
+  margin-top: 0.75rem;
+}
+.menu a {
+  display: block;
+  text-decoration: none;
+  color: var(--sidebar-text);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+.menu a:hover,
+.menu a.active {
+  background-color: var(--sidebar-hover);
+}
+
+/* ==============================
+   Контент домашніх завдань
+   ============================== */
+.homework-content {
+  flex-grow: 1;
+  background-color: var(--content-bg);
+  padding: 2rem;
+}
+
+/* ==============================
+   Контейнер самого розділу
+   ============================== */
 .homework-container {
-    max-width: 900px;
-    margin: 40px auto;
-    background: #f9fafc;
-    border-radius: 16px;
-    padding: 30px 32px;
-    box-shadow: 0 8px 32px rgba(34,59,96,0.11);
+  max-width: 960px;
+  margin: 0 auto;
 }
 
+/* ==============================
+   Шапка з навігацією між тижнями
+   ============================== */
 .hw-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
-
 .hw-header button {
-    background: #2e5dbb;
-    color: #fff;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background .2s;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
-
 .hw-header button:hover {
-    background: #1749a4;
+  background: #1f46a1;
+}
+.hw-header #week-range {
+  font-weight: 600;
 }
 
+/* ==============================
+   Таблиця домашніх завдань
+   ============================== */
 .hw-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
 }
-
-.hw-table th, .hw-table td {
-    border: 1px solid #e3e7ef;
-    padding: 10px 12px;
-    text-align: center;
-    font-size: 1rem;
+.hw-table th,
+.hw-table td {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
 }
-
 .hw-table th {
-    background: #e9f1fd;
-    font-weight: 700;
+  background-color: var(--primary);
+  color: white;
 }
-
 .hw-empty {
-    color: #9ba8be;
-    font-style: italic;
+  color: var(--muted);
 }
 
-.edit-btn, .delete-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    margin: 0 5px;
-    color: #3e81e6;
-    transition: color .2s;
+/* кнопки дій */
+.edit-btn,
+.delete-btn,
+.add-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+.edit-btn:hover {
+  background: #e0e7ff;
+}
+.delete-btn:hover {
+  background: #ffe0e0;
+}
+.add-btn:hover {
+  background: #e0ffe0;
 }
 
-.edit-btn:hover, .delete-btn:hover {
-    color: #1749a4;
-}
-
-.disabled {
-    color: #b6bac3;
-    font-size: 1.2rem;
+/* ==============================
+   Адаптивність
+   ============================== */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+  }
+  .homework-content {
+    padding: 1rem;
+  }
 }
