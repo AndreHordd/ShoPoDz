@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>📒 Оцінки | ShoPoDz</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/grades.css') }}">
+</head>
+<body data-week-start="{{ week_start.isoformat() }}">
+  <div class="container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h2>👨‍🏫 Вчитель</h2>
+      <ul class="menu">
+        <li><a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a></li>
+        <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
+        <li><a href="#">📝 Виставити оцінки</a></li>
+        <li class="active"><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
+        <li><a href="#">📚 Домашні завдання</a></li>
+        <!-- інші пункти… -->
+      </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="grades-content">
+      <div class="hw-header">
+        <button id="prev-week">← Попередній тиждень</button>
+        <span>{{ week_start }} — {{ week_end }}</span>
+        <button id="next-week">Наступний тиждень →</button>
+      </div>
+
+      {% for day in grades_data %}
+        <h4 style="margin:16px 0 8px">
+          {{ day.date.strftime('%A, %d.%m') }}
+        </h4>
+
+        {% if day.lessons %}
+<table class="hw-table">
+  <thead>
+    <tr>
+      <th>Клас</th>
+      <th>Урок</th>
+      <th>Виставлені оцінки</th>
+      <th>Дії</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in day.lessons %}
+      <tr>
+        <td>{{ item.lesson.class_.class_number }}{{ item.lesson.class_.subclass }}</td>
+        <td>{{ item.lesson.subject.title }}</td>
+        <td>{{ item.grades|length }} / {{ item.class_size }}</td>
+        <td>
+          <button class="set-grade-btn"
+                  data-lesson="{{ item.lesson.lesson_id }}"
+                  data-class="{{ item.lesson.class_id }}">
+            🏷 Виставити
+          </button>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+        {% else %}
+          <p>У цей день у вас немає уроків</p>
+        {% endif %}
+      {% endfor %}
+    </main>
+  </div>
+
+  <script src="{{ url_for('static',filename='js/grades.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+/* static/css/grades.css */
+
+/* ==============================
+   Змінні теми
+   ============================== */
+:root {
+  --sidebar-bg: #2c3e50;
+  --sidebar-text: #ecf0f1;
+  --sidebar-hover: #34495e;
+  --content-bg: #ffffff;
+  --body-bg: #f4f6f8;
+  --primary: #2e5dbb;
+  --border: #e3e7ef;
+  --text: #2e5db0;
+  --muted: #7f8c8d;
+}
+
+/* ==============================
+   Базові скидання
+   ============================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background-color: var(--body-bg);
+  color: var(--text);
+}
+
+/* ==============================
+   Основний контейнер
+   ============================== */
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ==============================
+   Сайдбар
+   ============================== */
+.sidebar {
+  flex: 0 0 250px;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 1.5rem;
+}
+.sidebar h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.menu {
+  list-style: none;
+}
+.menu li + li {
+  margin-top: 0.75rem;
+}
+.menu a {
+  display: block;
+  text-decoration: none;
+  color: var(--sidebar-text);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+.menu a:hover,
+.menu a.active {
+  background-color: var(--sidebar-hover);
+}
+
+/* ==============================
+   Контент для виставлення оцінок
+   ============================== */
+.grades-content {
+  flex-grow: 1;
+  background-color: var(--content-bg);
+  padding: 2rem;
+}
+
+/* ==============================
+   Контейнер самої секції
+   ============================== */
+.grades-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ==============================
+   Шапка з навігацією між тижнями
+   ============================== */
+.hw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.hw-header button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.hw-header button:hover {
+  background: #1f46a1;
+}
+.hw-header #week-range {
+  font-weight: 600;
+}
+
+/* ==============================
+   Таблиця оцінок
+   ============================== */
+.hw-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+.hw-table th,
+.hw-table td {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.hw-table th {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* ==============================
+   Кнопка "Виставити"
+   ============================== */
+.set-grade-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+.set-grade-btn:hover {
+  background: #e0e7ff;
+}
+
+/* ==============================
+   Мобільна адаптивність
+   ============================== */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+  }
+  .grades-content {
+    padding: 1rem;
+  }
+  .hw-table {
+    font-size: 0.9rem;
+  }
+}
+
+/* ==============================
+   Модальне вікно
+   ============================== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+}
+
+.modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--content-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 1001;
+  width: 320px;
+  max-width: 90%;
+  color: var(--text);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.modal .student-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.modal .student-list li {
+  padding: 0.6rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal .student-list li:last-child {
+  border-bottom: none;
+}
+
+.modal .student-list li:hover {
+  background: var(--primary-light);
+}
+
+.modal .grade-form {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.modal .grade-form select,
+.modal .grade-form input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.modal .grade-form button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modal .grade-form button:hover {
+  background: #1f46a1;
+}

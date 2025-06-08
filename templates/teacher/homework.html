@@ -49,8 +49,14 @@
               <tbody>
                 {% for item in day_data.lessons %}
                   <tr>
-                    <td>{{ item.lesson.class_id }}</td>
-                    <td>{{ item.lesson.subject.title if item.lesson.subject else '—' }}</td>
+                    <!-- Ось новий стовпець із номером та підкласом -->
+                    <td>
+                      {{ item.lesson.class_.class_number }}
+                      {{ item.lesson.class_.subclass }}
+                    </td>
+                    <td>
+                      {{ item.lesson.subject.title if item.lesson.subject else '—' }}
+                    </td>
                     <td>
                       {% if item.homework %}
                         {{ item.homework.description }}

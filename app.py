@@ -16,6 +16,9 @@ from flask import Flask, session, redirect, url_for, render_template  # ← + re
 from app.dao.lessons_dao import get_teacher_schedule                 # ← + ця функція
 from app.api.homework import homework_bp
 from datetime import timedelta
+from app.api.grades import grade_bp
+
+
 def add_days(date_obj, days):
     return date_obj + timedelta(days=days)
 
@@ -38,8 +41,8 @@ def create_app():
     app.register_blueprint(lesson_bp)
     app.register_blueprint(room_bp)
     app.register_blueprint(announcement_bp)
-
     app.register_blueprint(homework_bp)
+    app.register_blueprint(grade_bp)
 
     # ----------- /teacher/schedule -----------------
     @app.route('/teacher/schedule')
