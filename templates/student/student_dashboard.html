@@ -2,29 +2,32 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Панель учня | ShoPoDZ</title>
-    <link rel="stylesheet" href="/static/css/student_styles.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#ShoPoDZ | Учень</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/student_styles.css') }}">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
 </head>
 <body>
 <nav class="sidebar">
-    <div class="logo">#ShoPoDZ</div>
-    <ul>
-        <li><a href="#schedule">Мій розклад</a></li>
-        <li><a href="#homework">Домашні завдання</a></li>
-        <li><a href="#teachers">Мої вчителі та кабінети</a></li>
-        <li><a href="#attendance">Моя відвідуваність</a></li>
-        <li><a href="#announcements">Оголошення</a></li>
+    <h2>#ShoPoDZ</h2>
+    <ul id="side-menu">
+        <li><a href="#" data-target="schedule">Розклад</a></li>
+        <li><a href="#" data-target="homework">Домашні завдання</a></li>
+        <li><a href="#" data-target="teachers">Вчителі / кабінети</a></li>
+        <li><a href="#" data-target="attendance">Відвідуваність</a></li>
+        <li><a href="#" data-target="announcements">Оголошення</a></li>
         <li><a href="/logout">Вийти</a></li>
     </ul>
 </nav>
+
 <main class="main-content">
-    <header>
-        <h1>Панель учня</h1>
-        <p>Контролюй розклад, завдання та успіхи в один клік!</p>
-    </header>
-    <div id="modal" class="modal" style="display: none;"></div>
+    <section id="schedule"      class="panel"></section>
+    <section id="homework"      class="panel" hidden></section>
+    <section id="teachers"      class="panel" hidden></section>
+    <section id="attendance"    class="panel" hidden></section>
+    <section id="announcements" class="panel" hidden></section>
 </main>
-<script src="/static/js/student.js"></script>
+
+<script src="{{ url_for('static', filename='js/student.js') }}"></script>
 </body>
 </html>

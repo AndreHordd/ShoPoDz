@@ -1,165 +1,322 @@
+/* =========================================================================
+   GLOBAL
+   ========================================================================= */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
 body {
-    margin: 0;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #f7fafb;
-    color: #222;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  background: #f2f5f9;
+  color: #222;
 }
 
+/* =========================================================================
+   SIDEBAR
+   ========================================================================= */
 .sidebar {
-    position: fixed;
-    width: 220px;
-    height: 100vh;
-    background-color: #5F9EA0;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    top: 0; left: 0;
-    box-shadow: 2px 0 8px rgba(49,119,198,0.07);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: #223b60;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+  box-shadow: 2px 0 14px rgba(0, 0, 0, 0.15);
 }
 
-.sidebar .logo {
-    font-size: 2rem;
-    font-weight: bold;
-    padding: 30px 0 20px 30px;
-    letter-spacing: 1px;
+.sidebar h2 {
+  margin: 0 0 2.2rem;
+  font-size: 1.9rem;
+  letter-spacing: 0.5px;
 }
 
 .sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
 }
 
-.sidebar ul li {
-    margin: 15px 0;
+.sidebar li {
+  margin-bottom: 0.8rem;
+  width: 100%;
 }
 
-.sidebar ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-size: 1.07rem;
-    padding: 10px 30px;
-    display: block;
-    border-left: 3px solid transparent;
-    transition: 0.2s;
-}
-.sidebar ul li a:hover {
-    background: #4b8d90;
+.sidebar a {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background 0.25s;
 }
 
+.sidebar a:hover,
+.sidebar a.active {
+  background: #0d6efd;
+}
+
+/* =========================================================================
+   MAIN CONTENT
+   ========================================================================= */
 .main-content {
-    margin-left: 220px;
-    padding: 30px 40px 40px 40px;
-    min-height: 100vh;
+  margin-left: 240px;
+  max-width: calc(100% - 240px);
+  padding: 1.2rem 2rem;
+  min-height: 100vh;
 }
 
-header h1 {
-    margin-top: 0;
-    font-size: 2.2rem;
-    color: #3177c6;
-    margin-bottom: 8px;
-}
-header p {
-    margin: 0 0 24px 0;
-    color: #555;
-    font-size: 1.08rem;
+.panel {
+  width: 100%;
+  animation: fade-in 0.25s ease-in-out;
 }
 
-.dashboard-section {
-    background: #fff;
-    margin-bottom: 24px;
-    padding: 24px;
-    border-radius: 14px;
-    box-shadow: 0 2px 10px rgba(49,119,198,0.07);
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.dashboard-section h2 {
-    margin-top: 0;
-    color: #3177c6;
-    font-size: 1.25rem;
+/* =========================================================================
+   TABLES  (universal)
+   ========================================================================= */
+table,
+.single-table,
+.schedule-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.09);
+  margin: 1.8rem 0;
 }
 
-button {
-    background: #3177c6;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 22px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.15s;
-}
-button:hover {
-    background: #24599e;
+th {
+  padding: 1rem 1.2rem;
+  background: #e1e5ec;
+  font-weight: 600;
+  text-align: left;
+  font-size: 0.95rem;
 }
 
-.modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.30);
+td {
+  padding: 0.9rem 1.2rem;
+  border-top: 1px solid #d0d4db;
+  font-size: 0.93rem;
+}
+
+tr:nth-child(even) td { background: #f7f9fb; }
+tr:hover td           { background: #eef2f7; }
+
+/* =========================================================================
+   ANNOUNCEMENTS
+   ========================================================================= */
+article {
+  background: #fff;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.4rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+}
+
+article h4  { margin: 0 0 0.55rem; font-size: 1.15rem; }
+article time{ display:block;font-size:0.85rem;color:#6c757d;margin-bottom:0.55rem; }
+
+/* =========================================================================
+   BUTTONS
+   ========================================================================= */
+.btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.86rem;
+  border: none;
+  border-radius: 7px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-done { background: #198754; }
+.btn-undo { background: #dc3545; }
+
+.btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.btn:disabled,
+.btn:disabled:hover {
+  background: #adb5bd;
+  cursor: default;
+  transform: none;
+}
+
+/* =========================================================================
+   BADGES  (attendance status)
+   ========================================================================= */
+.badge {
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.status-present { background: #28a745; }
+.status-absent  { background: #dc3545; }
+.status-late    { background: #fd7e14; }
+.status-excused { background: #17a2b8; }
+
+/* =========================================================================
+   ATTENDANCE  – оновлений, зручніший вигляд
+   ========================================================================= */
+
+/* тулбар фільтрів прикріплений угорі */
+#attendance #att-main-filters{
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #f2f5f9;
+  padding: 0.6rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+#attendance .att-select label{
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #223b60;
+}
+
+#attendance .att-select select{
+  margin-left: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #c5c9d1;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.9rem;
+}
+
+/* статистика в гнучкій сітці */
+#attendance .att-stats-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.9rem;
+  margin: 1rem 0;
+}
+
+#attendance .stat-box{
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+#attendance .stat-box strong{ font-size: 1.15rem; }
+
+.stat-box.present { border-left: 6px solid #28a745; }
+.stat-box.absent  { border-left: 6px solid #dc3545; }
+.stat-box.late    { border-left: 6px solid #fd7e14; }
+.stat-box.excused { border-left: 6px solid #17a2b8; }
+.stat-box.total   { border-left: 6px solid #6c757d; }
+
+/* акордеон за днями */
+#attendance .day-title{
+  margin: 1.4rem 0 0.6rem;
+  font-size: 1.15rem;
+  color: #223b60;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+#attendance .day-title::after{
+  content: '▸';
+  margin-left: 6px;
+  font-size: 0.9rem;
+  transition: transform 0.2s;
+}
+
+#attendance .day-title.open::after{ transform: rotate(90deg); }
+
+/* таблиця уроків з анімацією згортання */
+#attendance .schedule-table{
+  transition: max-height 0.25s ease, opacity 0.25s ease;
+  overflow: hidden;
+  opacity: 1;
+  max-height: 1500px;           /* достатньо велике, щоб вмістити рядки */
+}
+
+#attendance .schedule-table:not(.open){
+  opacity: 0;
+  max-height: 0;
+}
+
+/* =========================================================================
+   UTILITIES
+   ========================================================================= */
+.error {
+  color: #c41c1c;
+  background: #fdecea;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.no-data {
+  padding: 1.2rem 0;
+  font-style: italic;
+  color: #6c757d;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* =========================================================================
+   RESPONSIVE
+   ========================================================================= */
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 1rem;
+  }
+
+  .sidebar ul {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-}
-.modal-content {
-    background: #fff;
-    padding: 30px 30px 20px 30px;
-    border-radius: 18px;
-    box-shadow: 0 4px 24px rgba(49,119,198,0.18);
-    min-width: 300px;
-}
+    gap: 0.5rem;
+    overflow-x: auto;
+  }
 
-@media (max-width: 900px) {
-    .sidebar {
-        width: 160px;
-    }
-    .main-content {
-        margin-left: 160px;
-        padding: 18px 8px 28px 8px;
-    }
-    .dashboard-section {
-        padding: 14px;
-    }
-}
+  .sidebar li { margin-bottom: 0; flex: 0 0 auto; }
 
-@media (max-width: 700px) {
-    .sidebar {
-        position: relative;
-        width: 100vw;
-        height: auto;
-        flex-direction: row;
-        gap: 0;
-        box-shadow: none;
-    }
-    .sidebar .logo {
-        padding: 14px 12px;
-        font-size: 1.3rem;
-    }
-    .sidebar ul {
-        display: flex;
-        flex-direction: row;
-        gap: 4px;
-    }
-    .sidebar ul li {
-        margin: 0;
-    }
-    .sidebar ul li a {
-        padding: 8px 10px;
-        font-size: 0.97rem;
-        border-left: none;
-        border-bottom: 2px solid transparent;
-    }
-    .sidebar ul li a:hover {
-        border-bottom: 2px solid #ffc107;
-        background: #24599e;
-    }
-    .main-content {
-        margin-left: 0;
-        padding: 8px 3vw 16px 3vw;
-    }
-    .dashboard-section {
-        padding: 8px;
-    }
+  .main-content {
+    margin: 1rem 0 0;
+    max-width: 100%;
+    padding: 1rem;
+  }
 }
