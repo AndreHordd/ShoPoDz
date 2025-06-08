@@ -1,7 +1,7 @@
 # app/dao/homework_dao.py
 
 from datetime import datetime, timedelta
-from app.models import db, Homework, Lesson
+from app.models import db, Homework, Lesson, Student
 
 # app/dao/homework_dao.py
 
@@ -141,3 +141,25 @@ def delete_homework(homework_id):
     db.session.delete(hw)
     db.session.commit()
     return True, None
+
+def get_homework_for_student(student_id: int):
+    """
+    Повертає всі домашні завдання для класу учня.
+    """
+    # 1) Знаходимо студента
+    student = Student.query.get(student_id)
+    if not student:
+        return []
+
+    # 2) Витягуємо всі уроки його класу
+    lessons = Lesson.query.filter_by(class_id=student.class_id).all()
+    lesson_ids = [lesson.lesson_id for lesson in lessons]
+    if not lesson_ids:
+        return []
+
+    # 3) Повертаємо домашні завдання по цих уроках
+    return (Homework.query
+            .filter(Homework.lesson_id.in_(lesson_ids))
+            .order_by(Homework.deadline)
+            .all()
+    )

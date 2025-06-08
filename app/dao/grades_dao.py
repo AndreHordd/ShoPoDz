@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from app.models import db, Grade, Lesson, Student
-
+from app.models import Grade
 
 def get_teacher_grades_week(teacher_id, week_start):
     days = []
@@ -59,3 +59,9 @@ def add_or_update_grade(lesson_id, student_id, teacher_id, value, comment=None):
         db.session.add(g)
     db.session.commit()
     return g
+
+def get_grades_for_student(student_id: int):
+    """
+    Повертає всі оцінки для даного учня.
+    """
+    return Grade.query.filter_by(student_id=student_id).order_by(Grade.grade_id).all()

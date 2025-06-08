@@ -1,0 +1,255 @@
+/* File: static/css/parent.css */
+
+:root {
+  --sidebar-bg: #4a817c;
+  --sidebar-text: #ffffff;
+  --sidebar-hover: #36716b;
+  --content-bg: #f8f9fa;
+  --primary-color: #31717b;
+  --border-color: #dee2e6;
+  --alert-success-bg: #d4edda;
+  --alert-success-color: #155724;
+  --alert-danger-bg: #f8d7da;
+  --alert-danger-color: #721c24;
+  --btn-warning-bg: #ffc107;
+  --btn-warning-hover: #e0a800;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--content-bg);
+  color: #212529;
+}
+
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 2rem 1rem;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu li {
+  margin-bottom: 0.75rem;
+}
+
+.menu li a {
+  display: block;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.menu li a:hover,
+.menu li.active a {
+  background: var(--sidebar-hover);
+}
+
+.content {
+  margin-left: 260px;
+  padding: 2rem;
+  flex: 1;
+}
+
+.btn {
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn-warning {
+  background: var(--btn-warning-bg);
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background: var(--btn-warning-hover);
+}
+
+.alert {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+}
+
+.alert-success {
+  background: var(--alert-success-bg);
+  color: var(--alert-success-color);
+}
+
+.alert-danger {
+  background: var(--alert-danger-bg);
+  color: var(--alert-danger-color);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+th {
+  background: #e9ecef;
+}
+
+.list-group {
+  padding-left: 0;
+  margin-bottom: 1.5rem;
+}
+
+.list-group-item {
+  padding: 0.75rem 1.25rem;
+  margin-bottom: -1px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+}
+
+.content h1,
+.content h2,
+.content h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+/* Навігація по тижнях */
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.week-range {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+/* Загальні кнопки навігації */
+.btn-nav {
+  background: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-nav:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Контейнер і кнопка ознайомлення */
+.ack-container {
+  text-align: right;
+  margin-bottom: 1.5rem;
+}
+
+.btn-ack {
+  background: var(--btn-warning-bg);
+  color: #212529;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-ack:hover {
+  background: var(--btn-warning-hover);
+}
+
+/* Злегка зменшимо ширину контенту, аби було зручно читати */
+.content.diary-content {
+  max-width: 900px;
+  margin-left: 280px; /* трохи більше, ніж sidebar */
+}
+/* Контейнер кнопки */
+.ack-container {
+  text-align: right;
+  margin: 1.5rem 0;
+}
+
+/* Сама кнопка */
+.ack-btn {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ack-btn:hover {
+  background-color: #265f62; /* трохи темніший відтінок */
+}
+
+/* Інформаційний блок після підтвердження */
+.ack-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--alert-success-bg);
+  color: var(--alert-success-color);
+  padding: 0.75rem 1rem;
+  border-radius: 0.3rem;
+  margin: 1.5rem 0;
+}
+
+.ack-info svg {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+}

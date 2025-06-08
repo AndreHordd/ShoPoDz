@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>📓 Щоденник | ShoPoDz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/parent.css') }}">
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h2>👪 Батьки</h2>
+      <ul class="menu">
+        <li><a href="{{ url_for('parent.parent_dashboard') }}">🏠 Дашборд</a></li>
+        <li class="active"><a href="{{ url_for('parent.parent_diary') }}">📓 Щоденник</a></li>
+        <!-- Попередній і Наступний тиждень видалені звідси -->
+      </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="content diary-content">
+      <h1>📓 Щоденник: {{ student.first_name }} {{ student.last_name }}</h1>
+
+      <!-- навігація по тижнях (йшла в центрі) -->
+      <div class="week-nav">
+        <a href="{{ url_for('parent.parent_diary', week_start=prev_week) }}" class="btn btn-nav">← Попередній тиждень</a>
+        <span class="week-range">{{ week_start.strftime('%d.%m.%Y') }} — {{ week_end.strftime('%d.%m.%Y') }}</span>
+        <a href="{{ url_for('parent.parent_diary', week_start=next_week) }}" class="btn btn-nav">Наступний тиждень →</a>
+      </div>
+
+      <!-- кнопка ознайомлення -->
+      {% if not acknowledged %}
+  <div class="ack-container">
+    <form action="{{ url_for('parent.parent_diary_ack') }}" method="post">
+      <button type="submit" class="btn ack-btn">
+        👁 Я ознайомився(лась)
+      </button>
+    </form>
+  </div>
+{% else %}
+  <div class="alert alert-success ack-info">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+         class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+      <path d="M16 8A8 8 0 11. . ." />
+    </svg>
+    Ви ознайомились: {{ acknowledged[0].strftime('%d.%m.%Y %H:%M') }}
+  </div>
+{% endif %}
+      <!-- дні тижня -->
+      {% for day in diary %}
+      <section class="day-block mb-5">
+        <h3>
+          {{ ["","Понеділок","Вівторок","Середа","Четвер","Пʼятниця","Субота","Неділя"][day.date.isoweekday()] }}
+          — {{ day.date.strftime('%d.%m.%Y') }}
+        </h3>
+
+        {% if day.lessons %}
+        <table class="table mb-3">
+          <thead>
+            <tr>
+              <th>Час</th>
+              <th>Клас</th>
+              <th>Предмет</th>
+              <th>Дом. завдання</th>
+              <th>Оцінки</th>
+              <th>Відвідуваність</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in day.lessons %}
+            <tr>
+              <td>{{ item.lesson.start_time.strftime('%H:%M') }}–{{ item.lesson.end_time.strftime('%H:%M') }}</td>
+              <td>{{ item.lesson.class_.class_number }}{{ item.lesson.class_.subclass }}</td>
+              <td>{{ item.lesson.subject.title }}</td>
+              <td>
+                {% if item.homework %}{{ item.homework.description }}{% else %}—{% endif %}
+              </td>
+              <td>
+                {% if item.grades %}
+                  {% for g in item.grades %}
+                    {{ g.grade_value }}{% if not loop.last %}, {% endif %}
+                  {% endfor %}
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                {% if item.attendance %}{{ item.attendance.status }}{% else %}—{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>На цей день уроків немає.</p>
+        {% endif %}
+      </section>
+      {% endfor %}
+    </main>
+  </div>
+
+
+</body>
+</html>

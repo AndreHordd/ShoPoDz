@@ -77,4 +77,17 @@ class Grade(db.Model):
     comment     = db.Column(db.Text)
     # прибрати цю строку:
     # date_set    = db.Column(db.DateTime, default=datetime.utcnow)
+    lesson = db.relationship('Lesson', backref='grades', lazy=True)
 
+class Attendance(db.Model):
+    __tablename__ = 'attendance'  # або 'attendances', якщо у вашій БД саме так
+
+    attendance_id = db.Column(db.Integer, primary_key=True)
+    student_id    = db.Column(db.Integer, db.ForeignKey('students.user_id'), nullable=False)
+    lesson_id     = db.Column(db.Integer, db.ForeignKey('lessons.lesson_id'),  nullable=False)
+    status        = db.Column(db.String(20), nullable=False)  # наприклад, 'present', 'absent' тощо
+    comment       = db.Column(db.Text)
+
+    # Зв’язки для зручності:
+    student = db.relationship('Student', backref='attendances', lazy=True)
+    lesson  = db.relationship('Lesson',  backref='attendances', lazy=True)

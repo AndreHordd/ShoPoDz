@@ -1,5 +1,15 @@
 from flask import Blueprint, render_template, session, redirect, url_for, jsonify, request
 from app.utils.db import get_db
+from app.dao.parent_acknowledgements_dao import record_acknowledgement, has_acknowledged
+from app.dao.students_dao import get_student_by_parent
+from app.dao.grades_dao import get_grades_for_student
+from app.dao.homework_dao import get_homework_for_student
+from app.dao.attendance_dao import get_attendance_for_student
+from flask import Blueprint, render_template, session, redirect, url_for, request
+from datetime import date, timedelta         # ← додано date
+from sqlalchemy import func
+from app.dao.students_dao import get_student_by_parent
+from app.models import Lesson, Homework, Grade, Attendance
 
 parent_bp = Blueprint('parent', __name__)
 
@@ -113,3 +123,89 @@ def delete_parent(user_id):
     conn.commit()
     cur.close()
     return jsonify({"success": True})
+
+@parent_bp.route('/parent/diary')
+def parent_diary():
+    if session.get('role') != 'parent':
+        return redirect(url_for('auth.login'))
+
+    parent_id = session['user_id']
+    student = get_student_by_parent(parent_id)
+    if not student:
+        return "Учень не знайдений", 404
+
+    # Визначаємо початок тижня (з понеділка)
+    week_start_str = request.args.get('week_start')
+    if week_start_str:
+        try:
+            week_start = date.fromisoformat(week_start_str)
+        except ValueError:
+            week_start = date.today() - timedelta(days=date.today().weekday())
+    else:
+        week_start = date.today() - timedelta(days=date.today().weekday())
+    week_end = week_start + timedelta(days=6)
+
+    # Посилання на попередній / наступний тиждень
+    prev_week = (week_start - timedelta(days=7)).isoformat()
+    next_week = (week_start + timedelta(days=7)).isoformat()
+
+    diary = []
+    for offset in range(7):
+        curr = week_start + timedelta(days=offset)
+        dow = curr.isoweekday()  # 1=Пн … 7=Нд
+
+        lessons = Lesson.query.filter_by(
+            class_id=student['class_id'],
+            day=dow
+        ).order_by(Lesson.start_time).all()
+
+        lessons_data = []
+        for lesson in lessons:
+            hw = Homework.query.filter(
+                Homework.lesson_id == lesson.lesson_id,
+                func.date(Homework.deadline) == curr
+            ).first()
+
+            grades = Grade.query.filter_by(
+                student_id=student['user_id'],
+                lesson_id=lesson.lesson_id
+            ).all()
+
+            att = Attendance.query.filter_by(
+                student_id=student['user_id'],
+                lesson_id=lesson.lesson_id
+            ).first()
+
+            lessons_data.append({
+                'lesson': lesson,
+                'homework': hw,
+                'grades': grades,
+                'attendance': att
+            })
+
+        diary.append({
+            'date': curr,
+            'lessons': lessons_data
+        })
+
+    return render_template(
+        'parent/diary.html',
+        student=student,
+        diary=diary,
+        week_start=week_start,
+        week_end=week_end,
+        prev_week=prev_week,
+        next_week=next_week
+    )
+
+@parent_bp.route('/parent/diary/ack', methods=['POST'])
+def parent_diary_ack():
+    if session.get('role') != 'parent':
+        return redirect(url_for('auth.login'))
+
+    parent_id = session['user_id']
+    student   = get_student_by_parent(parent_id)
+    record_acknowledgement(parent_id, student['user_id'])
+
+    # Повернутися на сторінку щоденника
+    return redirect(url_for('parent.parent_diary'))

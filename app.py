@@ -17,6 +17,7 @@ from app.dao.lessons_dao import get_teacher_schedule                 # ← + ц�
 from app.api.homework import homework_bp
 from datetime import timedelta
 from app.api.grades import grade_bp
+from app.utils.db import init_db, close_db
 
 
 def add_days(date_obj, days):
@@ -27,8 +28,15 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Ініціалізація бази
+    # Ініціалізація SQLAlchemy
     db.init_app(app)
+
+    # teardown для raw-psycopg2-з’єднання
+    app.teardown_appcontext(close_db)
+
+    # Одразу ініціалізуємо нашу таблицю parent_acknowledgements
+    with app.app_context():
+        init_db()
 
     # Реєстрація маршрутів
     app.register_blueprint(auth_bp)
@@ -47,13 +55,10 @@ def create_app():
     # ----------- /teacher/schedule -----------------
     @app.route('/teacher/schedule')
     def teacher_schedule():
-        # перевірка логіну й ролі
         if 'user_id' not in session or session.get('role') != 'teacher':
             return redirect(url_for('auth.login'))
-
         lessons = get_teacher_schedule(session['user_id'])
         return render_template('teacher/schedule.html', lessons=lessons)
-
 
     # Головна сторінка → форма авторизації
     @app.route('/')
@@ -65,9 +70,7 @@ def create_app():
     def redirect_by_role():
         if 'user_id' not in session or 'role' not in session:
             return redirect(url_for('auth.login'))
-
         role = session['role']
-
         if role == 'teacher':
             return redirect(url_for('teacher.dashboard'))
         elif role == 'admin':
@@ -86,3 +89,4 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True)
+
