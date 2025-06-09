@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>🗨️ Месенджер | Вчитель</title>
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/messenger.css') }}"
+  />
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h2>👨‍🏫 Вчитель</h2>
+      <ul class="menu">
+        <li><a href="{{ url_for('teacher_schedule') }}">📅 Розклад</a></li>
+        <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Класи</a></li>
+        <li class="active">
+          <a href="{{ url_for('messenger.teacher_messenger') }}">🗨️ Месенджер</a>
+        </li>
+        <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Домашні</a></li>
+        <!-- … -->
+      </ul>
+    </aside>
+
+    <!-- MAIN CHAT -->
+<!-- … -->
+<aside class="sidebar">
+  <h2>👨‍🏫 Вчитель</h2>
+  <ul class="menu">
+    <!-- ваші пункти меню… -->
+    <li class="active">
+      <a href="{{ url_for('messenger.teacher_messenger') }}">📨 Месенджер</a>
+    </li>
+  </ul>
+</aside>
+
+<main class="msg-content">
+  <div class="conversations">
+    <h3>Мої класи</h3>
+    <!-- тут замість <ul> робимо <div> з кнопками -->
+    <div id="class-list" class="class-buttons">
+      <!-- JS заповнить шаблоном:
+           <button class="class-btn" data-id="…">10A</button> тощо -->
+    </div>
+
+    <h3>Батьки</h3>
+    <ul id="parent-list"></ul>
+  </div>
+
+  <!-- … решта чату без змін … -->
+</main>
+<!-- … скрипти … -->
+
+  </div>
+
+  <!-- Спочатку визначаємо CURRENT_USER_ID -->
+  <script>
+    const CURRENT_USER_ID = {{ session['user_id'] }};
+  </script>
+  <!-- Потім підключаємо логіку месенджера -->
+  <script src="{{ url_for('static', filename='js/messenger.js') }}"></script>
+</body>
+</html>

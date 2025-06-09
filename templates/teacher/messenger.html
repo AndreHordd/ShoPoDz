@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>📨 Месенджер | ShoPoDz</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/messenger.css') }}">
+  <script>
+    window.CURRENT_USER_ID = {{ session.user_id|tojson }};
+    window.BASE = "{{ request.host_url.rstrip('/') }}";
+  </script>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>👨‍🏫 Вчитель</h2>
+      <ul class="menu">
+        <li><a href="{{ url_for('teacher_schedule') }}">📅 Розклад</a></li>
+        <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Класи</a></li>
+        <li><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
+        <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Дз</a></li>
+        <li class="active"><a href="{{ url_for('messenger.teacher_messenger') }}">📨 Месенджер</a></li>
+      </ul>
+    </aside>
+    <main class="messenger-content">
+      <div class="sidebar-panel">
+        <h3>Ваші класи</h3>
+        <div id="class-list"></div>
+        <h3>Батьки</h3>
+        <ul id="parent-list"></ul>
+      </div>
+      <div class="chat-panel">
+        <h3 id="chat-header">Оберіть клас</h3>
+        <div id="messages" class="messages"></div>
+        <div class="send-panel">
+          <input type="text" id="msg-text" placeholder="Повідомлення…" />
+          <button id="send-btn">▶️</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='js/messenger.js') }}"></script>
+</body>
+</html>

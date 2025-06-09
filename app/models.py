@@ -38,15 +38,6 @@ class Student(db.Model):
     middle_name = db.Column(db.String(100))
     class_id = db.Column(db.Integer, db.ForeignKey('classes.class_id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('parents.user_id'), nullable=False)
-
-class Homework(db.Model):
-    __tablename__ = 'homework'
-    homework_id = db.Column(db.Integer, primary_key=True)
-    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.lesson_id'), nullable=False)
-    description = db.Column(db.Text)
-    deadline = db.Column(db.DateTime)
-    # НЕ ДОДАВАЙ lesson = db.relationship(...) — backref вже створює lesson в Homework
-
 class Lesson(db.Model):
     __tablename__ = 'lessons'
     lesson_id = db.Column(db.Integer, primary_key=True)
@@ -58,15 +49,23 @@ class Lesson(db.Model):
     day = db.Column(db.SmallInteger, nullable=False)  # 1=Monday, ..., 7=Sunday
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
-
-    # В Lesson — тільки тут зв'язок!
-    homeworks = db.relationship("Homework", backref="lesson", lazy=True)
     subject = db.relationship("Subject", backref="lessons")
 
-    # опціональні зв'язки:
-    # class_ = db.relationship("Class", backref="lessons")
-    # subject = db.relationship("Subject", backref="lessons")
-    # teacher = db.relationship("User", backref="lessons")  # якщо в users всі вчителі
+class LessonSession(db.Model):
+    __tablename__ = 'lesson_sessions'
+    session_id   = db.Column(db.Integer, primary_key=True)
+    lesson_id    = db.Column(db.Integer, db.ForeignKey('lessons.lesson_id'), nullable=False)
+    session_date = db.Column(db.Date, nullable=False)
+    lesson       = db.relationship('Lesson', backref='sessions', lazy=True)
+
+class Homework(db.Model):
+    __tablename__ = 'homework'
+    homework_id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.Text)
+    deadline    = db.Column(db.DateTime)
+    session_id  = db.Column(db.Integer, db.ForeignKey('lesson_sessions.session_id'), nullable=False)
+
+
 
 class Grade(db.Model):
     __tablename__ = 'grades'

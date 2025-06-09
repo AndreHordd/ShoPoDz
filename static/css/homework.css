@@ -167,3 +167,19 @@ body {
     padding: 1rem;
   }
 }
+/* Додавай у <style> або css/homework.css */
+#error-modal-content, .error-modal-content {
+  color: #c02a2a;
+  font-size: 1.15rem;
+  background: #fff7f7;
+  border-radius: 18px;
+  box-shadow: 0 16px 44px #e24d4d44, 0 2px 8px #c2303044;
+  min-width: 290px;
+  max-width: 94vw;
+  text-align: center;
+  font-weight: 500;
+}
+#hw-delete-confirm { background: #e94c4c; }
+#hw-delete-cancel  { background: #888; }
+#hw-delete-confirm:hover { background: #ba2323; }
+#hw-delete-cancel:hover  { background: #555; }
