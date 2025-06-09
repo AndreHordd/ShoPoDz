@@ -513,13 +513,56 @@ function showUserManagement() {
         <section class="dashboard-section">
             <h2>Користувачі</h2>
             <button class="btn-primary" onclick="showAddUserForm()">➕ Додати користувача</button>
-            <h3><a href="#" onclick="loadUserList('student')">Учні</a></h3>
+            <h3><a href="#" onclick="showClassList()">Учні</a></h3>
             <div id="student-list"></div>
             <h3><a href="#" onclick="loadUserList('parent')">Батьки</a></h3>
             <div id="parent-list"></div>
         </section>
     `;
 }
+
+function showClassList() {
+    const container = document.getElementById('student-list');
+    container.innerHTML = `<p>Завантаження класів...</p>`;
+
+    fetch('/api/classes')
+        .then(res => res.json())
+        .then(classes => {
+            container.innerHTML = `
+                <p>Оберіть клас:</p>
+                <ul>
+                    ${classes.map(cls => `
+                        <li><button class="btn-small" onclick="showStudentsByClass(${cls.id}, '${cls.name}')">${cls.name}</button></li>
+                    `).join('')}
+                </ul>
+            `;
+        });
+}
+
+function showStudentsByClass(classId, className) {
+    const container = document.getElementById('student-list');
+    container.innerHTML = `<p>Завантаження учнів...</p>`;
+
+    fetch('/api/students')
+        .then(res => res.json())
+        .then(students => {
+            const filtered = students.filter(s => s.class_id == classId);
+            container.innerHTML = `
+                <h4>Клас: ${className}</h4>
+                <ul>
+                    ${filtered.map(s => `
+                        <li>
+                            ${s.last_name} ${s.first_name}${s.middle_name ? ' ' + s.middle_name : ''}
+                            <button onclick="showEditUserForm('student', ${s.user_id})">✏️ Редагувати</button>
+                            <button onclick="deleteUser('student', ${s.user_id})">🗑️ Видалити</button>
+                        </li>
+                    `).join('')}
+                </ul>
+                <button onclick="showClassList()">← Назад до класів</button>
+            `;
+        });
+}
+
 
 function loadUserList(type) {
     fetch(`/api/${type}s`)
@@ -531,11 +574,11 @@ function loadUserList(type) {
 
             users.forEach(u => {
                 const name = `${u.last_name} ${u.first_name}${u.middle_name ? ' ' + u.middle_name : ''}`;
-                const suffix = type === 'student' ? ` (Клас ${u.class_id})` : '';
+                const suffix = type === 'student' ? ` (Клас ${u.class})` : '';
                 html += `
                     <li>${name}${suffix}
-                        <button onclick="showEditUserForm('${type}', ${u.user_id})">✏️</button>
-                        <button onclick="deleteUser('${type}', ${u.user_id})">🗑️</button>
+                        <button onclick="showEditUserForm('${type}', ${u.user_id})">✏️ Редагувати</button>
+                        <button onclick="deleteUser('${type}', ${u.user_id})">🗑️ Видалити</button>
                     </li>
                 `;
             });
@@ -647,36 +690,78 @@ function showEditUserForm(type, id) {
             let extraField = '';
 
             if (type === 'student') {
-                extraField = `<label>Клас ID: <input id="edit-class-id" value="${user.class_id}"></label><br>`;
-            } else {
-                extraField = `<label>Телефон: <input id="edit-phone" value="${user.phone}"></label><br>`;
-            }
+                // Показуємо випадаючий список класів
+                fetch('/api/classes')
+                    .then(res => res.json())
+                     .then(classes => {
+                        const options = classes.map(c => {
+                            const label = c.subclass ? `${c.class_number}-${c.subclass}` : `${c.class_number}`;
+                            const selected = String(c.id) === String(user.class_id) ? 'selected' : '';
+                            return `<option value="${c.id}" ${selected}>${label}</option>`;
+                        }).join('');
 
-            content.innerHTML = `
-                <section class="dashboard-section">
-                    <h2>Редагувати користувача</h2>
-                    <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
-                    <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
-                    ${extraField}
-                    <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
-                    <button onclick="showUserManagement()">Назад</button>
-                </section>
-            `;
+                        extraField = `
+                            <label>Клас:
+                                <select id="edit-class-id">
+                                    ${options}
+                                </select>
+                            </label><br>
+                        `;
+
+                        content.innerHTML = `
+                            <section class="dashboard-section">
+                                <h2>Редагувати користувача</h2>
+                                <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
+                                <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
+                                <label>По батькові: <input id="edit-middlename" value="${user.middle_name || ''}"></label><br>
+                                <label>Клас:
+                                    <select id="edit-class-id">${options}</select>
+                                </label><br>
+                                <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
+                                <button onclick="showUserManagement()">Назад</button>
+                            </section>
+                        `;
+                    });
+            } else {
+                // Для батьків
+                extraField = `<label>Телефон: <input id="edit-phone" value="${user.phone}"></label><br>`;
+                content.innerHTML = `
+                    <section class="dashboard-section">
+                        <h2>Редагувати користувача</h2>
+                        <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
+                        <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
+                        ${extraField}
+                        <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
+                        <button onclick="showUserManagement()">Назад</button>
+                    </section>
+                `;
+            }
         });
 }
 
 function submitEditUser(type, id) {
     const lastName = document.getElementById('edit-lastname').value.trim();
     const firstName = document.getElementById('edit-firstname').value.trim();
-    if (!lastName || !firstName) {
+    const middleName = document.getElementById('edit-middlename')?.value.trim() || '';
+
+    if (!lastName || !firstName || (type === 'student' && !middleName)) {
         alert("❗ Заповніть усі поля");
         return;
     }
 
-    const body = { last_name: lastName, first_name: firstName };
+    const body = {
+        last_name: lastName,
+        first_name: firstName,
+        middle_name: middleName
+    };
 
     if (type === 'student') {
-        body.class_id = document.getElementById('edit-class-id').value;
+        const classId = parseInt(document.getElementById('edit-class-id').value);
+        if (isNaN(classId)) {
+            alert("❗ Оберіть клас");
+            return;
+        }
+        body.class_id = classId;
     } else {
         body.phone = document.getElementById('edit-phone').value.trim();
     }

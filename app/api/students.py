@@ -14,12 +14,18 @@ def student_dashboard():
 def get_students_for_class(class_id):
     return Student.query.filter_by(class_id=class_id).order_by(Student.last_name.asc()).all()
 
-# Отримати всіх учнів
 @student_bp.route('/api/students', methods=['GET'])
 def get_students():
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT user_id, first_name, last_name, middle_name, class_id, parent_id FROM students")
+    cur.execute("""
+        SELECT s.user_id, s.first_name, s.last_name, s.middle_name,
+               s.class_id, s.parent_id,
+               CONCAT(c.class_number, '-', c.subclass) AS class_name,
+               c.subclass
+        FROM students s
+        JOIN classes c ON s.class_id = c.class_id
+    """)
     rows = cur.fetchall()
     cur.close()
     return jsonify([
@@ -29,7 +35,9 @@ def get_students():
             "last_name": r[2],
             "middle_name": r[3],
             "class_id": r[4],
-            "parent_id": r[5]
+            "parent_id": r[5],
+            "class": r[6],         # Назва класу (наприклад, 10-А)
+            "subclass": r[7]       # Окремо літера класу (наприклад, А)
         } for r in rows
     ])
 
@@ -52,7 +60,7 @@ def add_student():
         INSERT INTO users (email, password_hash, role)
         VALUES (%s, %s, 'student')
         RETURNING user_id
-    """, (f"{first_name.lower()}.{last_name.lower()}@school.com", 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'))  # або замініть логікою генерації
+    """, (f"student.{first_name.lower()}_{last_name.lower()}@school.com", 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'))  # або замініть логікою генерації
     user_id = cur.fetchone()[0]
 
     # 2. Додаємо запис у students
@@ -75,7 +83,7 @@ def update_student(user_id):
     class_id = data.get('class_id')
     parent_id = data.get('parent_id')
 
-    email = f"{last_name.lower()}.{first_name.lower()}@school.local"
+    email = f"student.{first_name.lower()}_{last_name.lower()}@school.com"
 
     conn = get_db()
     cur = conn.cursor()
@@ -99,8 +107,12 @@ def get_single_student(user_id):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        SELECT s.user_id, s.first_name, s.last_name, s.middle_name, s.class_id, s.parent_id, u.email
-        FROM students s JOIN users u ON s.user_id = u.user_id
+        SELECT s.user_id, s.first_name, s.last_name, s.middle_name,
+               s.class_id, s.parent_id, u.email,
+               CONCAT(c.class_number, '-', c.subclass) AS class_name
+        FROM students s
+        JOIN users u ON s.user_id = u.user_id
+        JOIN classes c ON s.class_id = c.class_id
         WHERE s.user_id = %s
     """, (user_id,))
     row = cur.fetchone()
@@ -113,9 +125,9 @@ def get_single_student(user_id):
             "middle_name": row[3],
             "class_id": row[4],
             "parent_id": row[5],
-            "email": row[6]
+            "email": row[6],
+            "class": row[7]  # назва класу для виводу
         })
-
     else:
         return jsonify({"error": "Student not found"}), 404
 
