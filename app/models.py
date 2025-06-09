@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from datetime import datetime, date
 db = SQLAlchemy()
 
 class Subject(db.Model):
@@ -91,3 +92,25 @@ class Attendance(db.Model):
     # Зв’язки для зручності:
     student = db.relationship('Student', backref='attendances', lazy=True)
     lesson  = db.relationship('Lesson',  backref='attendances', lazy=True)
+
+
+class ParentSignature(db.Model):
+    """
+    Прив’язка SQLAlchemy до вже створеної таблиці signatures.
+    """
+    __tablename__ = "signatures"          # ← ваша назва
+
+    signature_id = db.Column(db.Integer, primary_key=True)
+    parent_id    = db.Column(db.Integer,
+                             db.ForeignKey("parents.user_id",
+                                           ondelete="CASCADE"),
+                             nullable=False)
+    student_id   = db.Column(db.Integer,
+                             db.ForeignKey("students.user_id",
+                                           ondelete="CASCADE"),
+                             nullable=False)
+    signed_at    = db.Column(db.DateTime,
+                             nullable=False,
+                             default=datetime.utcnow)
+
+    # унікальність по всьому timestamp залишаємо — дубль малоймовірний
