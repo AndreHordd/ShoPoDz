@@ -75,37 +75,36 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('next-week').addEventListener('click', () => changeWeek(7));
 
   // ДОДАТИ ДЗ
-  document.querySelectorAll('.add-btn').forEach(btn => {
+document.querySelectorAll('.add-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const classId = btn.dataset.class;
+    const classId   = btn.dataset.class;
     const subjectId = btn.dataset.subject;
-    const dateStr = btn.dataset.date;
+    const dateStr   = btn.dataset.date;
     openHWModal({
       title: 'Додати домашнє завдання',
       date: dateStr,
       onSave: async ({description, deadline}) => {
-        // Перевірка дати
-        const today = new Date();
-        const picked = new Date(deadline);
-        picked.setHours(0,0,0,0);
-        today.setHours(0,0,0,0);
+        // перевіряємо дату локально...
+        const today = new Date(); today.setHours(0,0,0,0);
+        const picked = new Date(deadline); picked.setHours(0,0,0,0);
         if (picked < today) throw new Error("Дату у минулому вибрати не можна!");
 
-        // Надсилаємо на сервер правильні поля!
+        // відсилаємо class_id і subject_id
         const res = await fetch(`/teacher/homework/add`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
-            class_id: classId,
+            class_id:   classId,
             subject_id: subjectId,
             description,
             deadline
           })
         });
-        if (res.ok) window.location.reload();
-        else {
-          let data = await res.json();
-          throw new Error(data.error || "Виникла помилка при додаванні ДЗ");
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const err = await res.json();
+          throw new Error(err.error || "Виникла помилка при додаванні ДЗ");
         }
       }
     });
@@ -115,69 +114,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // РЕДАГУВАТИ ДЗ
   document.querySelectorAll('.edit-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const hwId = btn.dataset.id;
-    const desc = btn.dataset.desc || '';
-    const deadline = btn.dataset.deadline || new Date().toISOString().slice(0,10);
-    openHWModal({
-      title: 'Редагувати домашнє завдання',
-      desc: desc,
-      date: deadline,
-      onSave: async ({description, deadline}) => {
-        // deadline ігноруємо, він незмінний
-        const res = await fetch(`/teacher/homework/${hwId}`, {
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({description, deadline})
-        });
-        if (res.ok) window.location.reload();
-        else {
-          let data = await res.json();
-          throw new Error(data.error || "Виникла помилка при редагуванні ДЗ");
+    btn.addEventListener('click', () => {
+      const hwId = btn.dataset.id;
+      const desc = btn.dataset.desc || '';
+      const deadline = btn.dataset.deadline || new Date().toISOString().slice(0,10);
+      openHWModal({
+        title: 'Редагувати домашнє завдання',
+        desc: desc,
+        date: deadline,
+        onSave: async ({description, deadline}) => {
+          // deadline ігноруємо, він незмінний
+          const res = await fetch(`/teacher/homework/${hwId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({description, deadline})
+          });
+          if (res.ok) window.location.reload();
+          else {
+            let data = await res.json();
+            throw new Error(data.error || "Виникла помилка при редагуванні ДЗ");
+          }
         }
-      }
+      });
+      // Робимо інпут дедлайну недоступним для редагування:
+      setTimeout(() => {
+        document.getElementById('hw-date').setAttribute('readonly', true);
+        document.getElementById('hw-date').setAttribute('disabled', true);
+      }, 100);
     });
-    // Робимо інпут дедлайну недоступним для редагування:
-    setTimeout(() => {
-      document.getElementById('hw-date').setAttribute('readonly', true);
-      document.getElementById('hw-date').setAttribute('disabled', true);
-    }, 100);
   });
-});
-
 
   // ВИДАЛИТИ ДЗ
-  // Функція для показу гарної модалки видалення ДЗ
-function showHWDeleteModal({onConfirm}) {
-  document.getElementById('hw-delete-modal').style.display = 'flex';
-  // Скасувати
-  document.getElementById('hw-delete-cancel').onclick = () => {
-    document.getElementById('hw-delete-modal').style.display = 'none';
-  };
-  // Підтвердити
-  document.getElementById('hw-delete-confirm').onclick = async () => {
-    await onConfirm();
-    document.getElementById('hw-delete-modal').style.display = 'none';
-  };
-}
+  function showHWDeleteModal({onConfirm}) {
+    document.getElementById('hw-delete-modal').style.display = 'flex';
+    document.getElementById('hw-delete-cancel').onclick = () => {
+      document.getElementById('hw-delete-modal').style.display = 'none';
+    };
+    document.getElementById('hw-delete-confirm').onclick = async () => {
+      await onConfirm();
+      document.getElementById('hw-delete-modal').style.display = 'none';
+    };
+  }
 
-document.querySelectorAll('.delete-btn').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const hwId = btn.dataset.id;
-    showHWDeleteModal({
-      onConfirm: async () => {
-        const res = await fetch(`/teacher/homework/${hwId}`, {
-          method: 'DELETE'
-        });
-        if (res.ok) window.location.reload();
-        else {
-          let data = await res.json();
-          showHWError(data.error || "Виникла помилка при видаленні ДЗ");
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const hwId = btn.dataset.id;
+      showHWDeleteModal({
+        onConfirm: async () => {
+          const res = await fetch(`/teacher/homework/${hwId}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) window.location.reload();
+          else {
+            let data = await res.json();
+            showHWError(data.error || "Виникла помилка при видаленні ДЗ");
+          }
         }
-      }
+      });
     });
   });
-});
 
 });
-
