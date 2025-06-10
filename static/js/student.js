@@ -64,18 +64,30 @@ function fetchPanel(name, cb) {
    3. РЕНДЕРИ
    ================================================================ */
 function renderSchedule(data) {
-    const days = ['', 'Пн','Вт','Ср','Чт','Пт','Сб','Нд'];
-    inject('schedule', tableMarkup(
-        ['День','Час','Предмет','Кабінет','Вчитель'],
-        data.map(l => [
-            days[l.day],
-            `${l.start_time}-${l.end_time}`,
-            l.subject,
-            l.room,
-            l.teacher
-        ])
-    ));
+    console.log('▼ Schedule raw data:', data);
+    const days = ['', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+
+    const head = ['День', 'Час', 'Предмет', 'Кабінет', 'Вчитель'];
+    const rows = data.map(item => {
+        // подивіться в консолі, які ключі там є:
+        // console.log(Object.keys(item));
+
+        // фолбеки на випадок інших назв полів
+        const start = item.start_time ?? item.start ?? item['startTime'] ?? '??';
+        const end   = item.end_time   ?? item.end   ?? item['endTime']   ?? '??';
+        const subj  = item.subject     ?? item.title ?? item.class       ?? '';
+        const room  = item.room        ?? item.room_number ?? item.roomNumber ?? '';
+        const teacher = item.teacher   ?? item.teacher_name ?? '';
+
+        // якщо item.day — не число, теж покаже
+        const day = Number.isInteger(item.day) ? days[item.day] : item.day;
+
+        return [ day, `${start}-${end}`, subj, room, teacher ];
+    });
+
+    inject('schedule', tableMarkup(head, rows));
 }
+
 
 function renderHomework(data) {
     inject('homework', tableMarkup(
