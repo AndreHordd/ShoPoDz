@@ -42,13 +42,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ================================================================
-   2. УТИЛІТА ЗАПИТУ
+   2. УТИЛІТА ЗАПИТУ з кращою обробкою помилок
    ================================================================ */
 function fetchPanel(name, cb) {
     fetch(`/student/api/${name}`)
-        .then(r => r.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP ${response.status}: ${text.trim().slice(0, 200)}…`);
+                });
+            }
+            return response.json();
+        })
         .then(cb)
-        .catch(err => inject(name, `<p class="error">${err}</p>`));
+        .catch(err => {
+            inject(name, `<p class="error">${err.message}</p>`);
+        });
 }
 
 /* ================================================================
@@ -60,7 +69,7 @@ function renderSchedule(data) {
         ['День','Час','Предмет','Кабінет','Вчитель'],
         data.map(l => [
             days[l.day],
-            `${l.start}-${l.end}`,
+            `${l.start_time}-${l.end_time}`,
             l.subject,
             l.room,
             l.teacher
@@ -131,24 +140,21 @@ document.addEventListener('change', e => {
 function renderAttendance(data) {
     attRaw = data;
     attSubjects = [...new Set(data.map(a => a.subject))].sort();
-    buildAttendance();  // перший рендер
+    buildAttendance();
 }
 
 function buildAttendance() {
-    /* --- головні фільтри: День, Статус, Предмет --- */
     const days    = [...new Set(attRaw.map(a => a.day))].sort();
     const selDay    = getVal('att-filter-day',    'all');
     const selStatus = getVal('att-filter-status', 'all');
     const selSubj   = getVal('att-filter-subj',   'all');
 
-    /* відфільтрований розклад */
     const sched = attRaw.filter(a =>
         (selDay    === 'all' || a.day     === selDay) &&
         (selStatus === 'all' || a.status  === selStatus) &&
         (selSubj   === 'all' || a.subject === selSubj)
     );
 
-    /* побудова головних фільтрів */
     const mainFilters = `
       <div class="att-filter" id="att-main-filters">
         <label class="att-select">День:
@@ -161,7 +167,8 @@ function buildAttendance() {
           <select id="att-filter-status">
             <option value="all">усі</option>
             ${Object.entries(statusUkr).map(([val,txt]) =>
-                `<option value="${val}"${val===selStatus?' selected':''}>${txt}</option>`).join('')}
+              `<option value="${val}"${val===selStatus?' selected':''}>${txt}</option>`
+            ).join('')}
           </select>
         </label>
         <label class="att-select">Предмет:
@@ -172,7 +179,6 @@ function buildAttendance() {
         </label>
       </div>`;
 
-    /* --- розклад-подібний вивід --- */
     let scheduleHTML = '';
     if (!sched.length) {
         scheduleHTML = '<p class="no-data">Нічого не знайдено.</p>';
@@ -189,11 +195,9 @@ function buildAttendance() {
                 <td><span class="badge status-${a.status}">${statusUkr[a.status]}</span></td>
                 <td>${a.comment||''}</td>
               </tr>`).join('')}
-          </table>
-        `).join('');
+          </table>`).join('');
     }
 
-    /* --- окремий фільтр періоду за статистикою --- */
     const selRange = getVal('stats-filter-range', 'all');
     const statsPeriodFilter = `
       <div class="stats-filter">
@@ -206,7 +210,6 @@ function buildAttendance() {
         </label>
       </div>`;
 
-    /* --- статистика --- */
     const now = Date.now();
     const inRange = a => {
         if (selRange==='all') return true;
@@ -224,7 +227,6 @@ function buildAttendance() {
         <div class="stat-box total">Уроків <strong>${statsData.length}</strong></div>
       </div>`;
 
-    /* --- фінальна збірка --- */
     inject('attendance',
       mainFilters +
       scheduleHTML +
@@ -239,8 +241,7 @@ function renderAnnouncements(data) {
         <h4>${n.title}</h4>
         <time>${new Date(n.created_at).toLocaleString()}</time>
         <p>${n.text}</p>
-      </article>
-    `).join(''));
+      </article>`).join(''));
 }
 
 /* ================================================================

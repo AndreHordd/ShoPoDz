@@ -18,15 +18,19 @@ class StudentPortalDAO:
                    g.comment,
                    (hs.homework_id IS NOT NULL) AS done
             FROM homework h
-            JOIN lessons  l  ON l.lesson_id  = h.lesson_id
-            JOIN subjects s  ON s.subject_id = l.subject_id
+            -- спочатку приєднуємо сесію уроку
+            JOIN lesson_sessions ls ON ls.session_id = h.session_id
+            JOIN lessons        l  ON l.lesson_id   = ls.lesson_id
+            JOIN subjects       s  ON s.subject_id  = l.subject_id
             LEFT JOIN grades g
-                   ON g.lesson_id  = h.lesson_id
+                   ON g.session_id = ls.session_id
                   AND g.student_id = %s
             LEFT JOIN homework_submissions hs
                    ON hs.homework_id = h.homework_id
                   AND hs.student_id  = %s
-            WHERE l.class_id = (SELECT class_id FROM students WHERE user_id = %s)
+            WHERE l.class_id = (
+                SELECT class_id FROM students WHERE user_id = %s
+            )
             ORDER BY h.deadline DESC
             """,
             (student_id, student_id, student_id),
@@ -36,12 +40,12 @@ class StudentPortalDAO:
         return [
             {
                 "homework_id": r[0],
-                "subject":     r[1],
+                "subject": r[1],
                 "description": r[2],
-                "deadline":    r[3].isoformat(),
-                "grade":       r[4],
-                "comment":     r[5],
-                "done":        bool(r[6]),
+                "deadline": r[3].isoformat(),
+                "grade": r[4],
+                "comment": r[5],
+                "done": bool(r[6]),
             }
             for r in rows
         ]
@@ -148,8 +152,10 @@ class StudentPortalDAO:
                    l.day,
                    l.start_time
             FROM attendance a
-            JOIN lessons  l ON l.lesson_id  = a.lesson_id
-            JOIN subjects s ON s.subject_id = l.subject_id
+            -- приєднуємо спочатку сесію уроку
+            JOIN lesson_sessions ls ON ls.session_id = a.session_id
+            JOIN lessons        l  ON l.lesson_id   = ls.lesson_id
+            JOIN subjects       s  ON s.subject_id  = l.subject_id
             WHERE a.student_id = %s
             ORDER BY l.day DESC, l.start_time DESC
             """,
@@ -160,11 +166,11 @@ class StudentPortalDAO:
         return [
             {
                 "attendance_id": r[0],
-                "subject":       r[1],
-                "status":        r[2],
-                "comment":       r[3],
-                "day":           r[4],
-                "start":         str(r[5]),
+                "subject": r[1],
+                "status": r[2],
+                "comment": r[3],
+                "day": r[4],
+                "start": str(r[5]),
             }
             for r in rows
         ]
