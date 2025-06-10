@@ -12,7 +12,7 @@ def student_dashboard():
     return render_template('student/student_dashboard.html')
 
 def get_students_for_class(class_id):
-    return Student.query.filter_by(class_id=class_id).order_by(Student.last_name.asc()).all()
+    return  Student.query.filter_by(class_id=class_id).order_by(Student.last_name.asc()).all()
 
 @student_bp.route('/api/students', methods=['GET'])
 def get_students():
