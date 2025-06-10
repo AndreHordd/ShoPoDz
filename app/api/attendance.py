@@ -12,27 +12,30 @@ def get_current_teacher_id():
         abort(401)  # Unauthorized
     return teacher_id
 
-# 1. Всі уроки-в-сесіях цього вчителя на дату
 @attendance_bp.route('/api/teacher/attendance/sessions', methods=['GET'])
 def get_teacher_sessions_by_date():
     date_str = request.args.get('date')
     teacher_id = get_current_teacher_id()
     curr_date = date.fromisoformat(date_str) if date_str else date.today()
-    sessions = (
-        LessonSession.query
-        .join(Lesson)
-        .filter(Lesson.teacher_id == teacher_id)
-        .filter(LessonSession.session_date == curr_date)
+    dow = curr_date.isoweekday()  # день тижня
+
+    # Вибираємо лише ті уроки, які мають бути у цей день
+    lessons = (
+        Lesson.query
+        .filter_by(teacher_id=teacher_id, day=dow)
         .join(Class, Lesson.class_id == Class.class_id)
         .order_by(Class.class_number, Class.subclass, Lesson.start_time)
         .all()
     )
+
     result = []
-    for session_obj in sessions:
-        lesson = session_obj.lesson
+    for lesson in lessons:
+        # Дивимося, чи вже є session для цієї пари на цю дату
+        session_obj = LessonSession.query.filter_by(lesson_id=lesson.lesson_id, session_date=curr_date).first()
         _class = lesson.class_
         result.append({
-            "session_id": session_obj.session_id,
+            "session_id": session_obj.session_id if session_obj else None,
+            "lesson_id": lesson.lesson_id,
             "class_id": _class.class_id,
             "class_title": f"{_class.class_number}{_class.subclass}",
             "subject": lesson.subject.title,
@@ -139,3 +142,24 @@ def get_students_for_class(class_id):
             "last_name": st.last_name
         } for st in students
     ])
+@attendance_bp.route('/api/teacher/attendance/create_session', methods=['POST'])
+def create_session():
+    data = request.json
+    lesson_id = data.get('lesson_id')
+    date_str = data.get('date')
+    if not lesson_id or not date_str:
+        return jsonify({'error': 'Не всі поля'}), 400
+    session_date = date.fromisoformat(date_str)
+
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({'error': 'Урок не знайдено'}), 400
+    if lesson.day != session_date.isoweekday():
+        return jsonify({'error': 'Цього уроку немає за розкладом у цей день!'}), 400
+
+    session_obj = LessonSession.query.filter_by(lesson_id=lesson_id, session_date=session_date).first()
+    if not session_obj:
+        session_obj = LessonSession(lesson_id=lesson_id, session_date=session_date)
+        db.session.add(session_obj)
+        db.session.commit()
+    return jsonify({'session_id': session_obj.session_id})

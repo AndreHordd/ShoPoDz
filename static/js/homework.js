@@ -59,6 +59,9 @@ function showHWError(msg) {
 
 // Перехід по тижнях
 function changeWeek(deltaDays) {
+   document.getElementById('hw-modal').style.display = 'none';
+  document.getElementById('hw-error-modal').style.display = 'none';
+  document.getElementById('hw-delete-modal').style.display = 'none';
   const url = new URL(window.location.href);
   let start = url.searchParams.get('week_start') || WEEK_START;
   let d = new Date(start);
@@ -73,68 +76,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ДОДАТИ ДЗ
   document.querySelectorAll('.add-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const lessonId = btn.dataset.lesson;
-      const dateStr = btn.dataset.date;
-      openHWModal({
-        title: 'Додати домашнє завдання',
-        date: dateStr,
-        onSave: async ({description, deadline}) => {
-          // Локальна перевірка: дата не в минулому
-          const today = new Date();
-          const picked = new Date(deadline);
-          picked.setHours(0,0,0,0);
-          today.setHours(0,0,0,0);
-          if (picked < today) throw new Error("Дату у минулому вибрати не можна!");
+  btn.addEventListener('click', () => {
+    const classId = btn.dataset.class;
+    const subjectId = btn.dataset.subject;
+    const dateStr = btn.dataset.date;
+    openHWModal({
+      title: 'Додати домашнє завдання',
+      date: dateStr,
+      onSave: async ({description, deadline}) => {
+        // Перевірка дати
+        const today = new Date();
+        const picked = new Date(deadline);
+        picked.setHours(0,0,0,0);
+        today.setHours(0,0,0,0);
+        if (picked < today) throw new Error("Дату у минулому вибрати не можна!");
 
-          // Надсилаємо на сервер
-          const res = await fetch(`/teacher/homework/add`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({lesson_id: lessonId, description, deadline})
-          });
-          if (res.ok) window.location.reload();
-          else {
-            let data = await res.json();
-            throw new Error(data.error || "Виникла помилка при додаванні ДЗ");
-          }
+        // Надсилаємо на сервер правильні поля!
+        const res = await fetch(`/teacher/homework/add`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            class_id: classId,
+            subject_id: subjectId,
+            description,
+            deadline
+          })
+        });
+        if (res.ok) window.location.reload();
+        else {
+          let data = await res.json();
+          throw new Error(data.error || "Виникла помилка при додаванні ДЗ");
         }
-      });
+      }
     });
   });
+});
+
 
   // РЕДАГУВАТИ ДЗ
   document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const hwId = btn.dataset.id;
-      const desc = btn.dataset.desc || '';
-      const deadline = btn.dataset.deadline || new Date().toISOString().slice(0,10);
-      openHWModal({
-        title: 'Редагувати домашнє завдання',
-        desc: desc,
-        date: deadline,
-        onSave: async ({description, deadline}) => {
-          // Локальна перевірка: дата не в минулому
-          const today = new Date();
-          const picked = new Date(deadline);
-          picked.setHours(0,0,0,0);
-          today.setHours(0,0,0,0);
-          if (picked < today) throw new Error("Дату у минулому вибрати не можна!");
-
-          const res = await fetch(`/teacher/homework/${hwId}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({description, deadline})
-          });
-          if (res.ok) window.location.reload();
-          else {
-            let data = await res.json();
-            throw new Error(data.error || "Виникла помилка при редагуванні ДЗ");
-          }
+  btn.addEventListener('click', () => {
+    const hwId = btn.dataset.id;
+    const desc = btn.dataset.desc || '';
+    const deadline = btn.dataset.deadline || new Date().toISOString().slice(0,10);
+    openHWModal({
+      title: 'Редагувати домашнє завдання',
+      desc: desc,
+      date: deadline,
+      onSave: async ({description, deadline}) => {
+        // deadline ігноруємо, він незмінний
+        const res = await fetch(`/teacher/homework/${hwId}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({description, deadline})
+        });
+        if (res.ok) window.location.reload();
+        else {
+          let data = await res.json();
+          throw new Error(data.error || "Виникла помилка при редагуванні ДЗ");
         }
-      });
+      }
     });
+    // Робимо інпут дедлайну недоступним для редагування:
+    setTimeout(() => {
+      document.getElementById('hw-date').setAttribute('readonly', true);
+      document.getElementById('hw-date').setAttribute('disabled', true);
+    }, 100);
   });
+});
+
 
   // ВИДАЛИТИ ДЗ
   // Функція для показу гарної модалки видалення ДЗ
