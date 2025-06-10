@@ -11,7 +11,8 @@ def api_get_classes():
         {
             "id": c.class_id,
             "name": f"{c.class_number}-{c.subclass}",
-            "class_number": c.class_number
+            "class_number": c.class_number,
+            "subclass": c.subclass  # 🔸 додай це поле
         } for c in classes
     ])
 

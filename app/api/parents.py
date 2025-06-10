@@ -101,7 +101,7 @@ def add_parent():
             RETURNING user_id
             """,
             (
-                f"{last_name.lower()}_{first_name.lower()}@school.local",
+                f"parent.{first_name.lower()}_{last_name.lower()}@school.com",
                 # sha-256 від "password"
                 "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
                 "parent",
@@ -126,9 +126,9 @@ def add_parent():
 def update_parent(user_id):
     data = request.get_json()
     first_name = data.get("first_name")
-    last_name  = data.get("last_name")
-    phone      = data.get("phone")
-    email      = f"{last_name.lower()}.{first_name.lower()}@school.local"
+    last_name = data.get("last_name")
+    phone = data.get("phone")
+    email = f"parent.{first_name.lower()}_{last_name.lower()}@school.com"
 
     conn = get_db()
     with conn.cursor() as cur:
