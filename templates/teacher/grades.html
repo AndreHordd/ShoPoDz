@@ -52,7 +52,8 @@
         <td>
           <button class="set-grade-btn"
                   data-lesson="{{ item.lesson.lesson_id }}"
-                  data-class="{{ item.lesson.class_id }}">
+                  data-class="{{ item.lesson.class_id }}"
+                  data-date="{{ item.date.isoformat() }}">
             🏷 Виставити
           </button>
         </td>
@@ -60,14 +61,12 @@
     {% endfor %}
   </tbody>
 </table>
-
         {% else %}
           <p>У цей день у вас немає уроків</p>
         {% endif %}
       {% endfor %}
     </main>
   </div>
-
   <script src="{{ url_for('static',filename='js/grades.js') }}"></script>
 </body>
 </html>

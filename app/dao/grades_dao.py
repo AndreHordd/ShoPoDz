@@ -1,8 +1,5 @@
-# app/dao/grades_dao.py
-
 from datetime import datetime, timedelta
-from app.models import db, Grade, Lesson, Student
-from app.models import Grade
+from app.models import db, Grade, Lesson, Student, LessonSession
 
 def get_teacher_grades_week(teacher_id, week_start):
     days = []
@@ -10,47 +7,67 @@ def get_teacher_grades_week(teacher_id, week_start):
         week_start = datetime.fromisoformat(week_start).date()
 
     for i in range(7):
-        curr = week_start + timedelta(days=i)
-        dow  = curr.isoweekday()
-        lessons = (Lesson.query
-                          .filter_by(teacher_id=teacher_id, day=dow)
-                          .order_by(Lesson.start_time)
-                          .all())
+        curr_date = week_start + timedelta(days=i)
+        dow = curr_date.isoweekday()
+        lessons = (
+            Lesson.query
+            .filter_by(teacher_id=teacher_id, day=dow)
+            .order_by(Lesson.start_time)
+            .all()
+        )
         lesson_items = []
         for L in lessons:
-            grades      = Grade.query.filter_by(lesson_id=L.lesson_id).all()
-            # рахуємо кількість учнів цього класу
-            class_size  = Student.query.filter_by(class_id=L.class_id).count()
+            # Можливо є session на цю дату
+            session = LessonSession.query.filter_by(
+                lesson_id=L.lesson_id, session_date=curr_date
+            ).first()
+            grades = []
+            if session:
+                grades = Grade.query.filter_by(session_id=session.session_id).all()
+                session_id = session.session_id
+            else:
+                session_id = None
+            class_size = Student.query.filter_by(class_id=L.class_id).count()
             lesson_items.append({
                 'lesson': L,
+                'session': session,
                 'grades': grades,
                 'class_size': class_size,
-                'date': curr
+                'date': curr_date,
+                'session_id': session_id
             })
-        days.append({'date': curr, 'lessons': lesson_items})
+        days.append({'date': curr_date, 'lessons': lesson_items})
     return days
 
 def get_students_in_class(class_id):
-    """
-    Повертає список Student, відсортованих за прізвищем.
-    """
-    return (Student.query
-                  .filter_by(class_id=class_id)
-                  .order_by(Student.last_name, Student.first_name)
-                  .all())
+    return (
+        Student.query
+        .filter_by(class_id=class_id)
+        .order_by(Student.last_name, Student.first_name)
+        .all()
+    )
 
-def add_or_update_grade(lesson_id, student_id, teacher_id, value, comment=None):
-    """
-    Створює або переписує оцінку.
-    """
-    g = Grade.query.filter_by(lesson_id=lesson_id, student_id=student_id).first()
+def add_or_update_grade(lesson_id, student_id, teacher_id, value, grade_date, comment=None):
+    from app.models import LessonSession
+    # 1. Знайти/створити LessonSession на цю дату для цього уроку
+    session = LessonSession.query.filter_by(lesson_id=lesson_id, session_date=grade_date).first()
+    if not session:
+        session = LessonSession(
+            lesson_id=lesson_id,
+            session_date=grade_date
+        )
+        db.session.add(session)
+        db.session.flush()  # Щоб отримати session_id
+
+    # 2. Додати/оновити оцінку
+    g = Grade.query.filter_by(session_id=session.session_id, student_id=student_id).first()
     if g:
         g.grade_value = value
-        g.comment     = comment
-        g.teacher_id  = teacher_id
+        g.comment = comment
+        g.teacher_id = teacher_id
     else:
         g = Grade(
-            lesson_id=lesson_id,
+            session_id=session.session_id,
             student_id=student_id,
             teacher_id=teacher_id,
             grade_value=value,
@@ -59,9 +76,3 @@ def add_or_update_grade(lesson_id, student_id, teacher_id, value, comment=None):
         db.session.add(g)
     db.session.commit()
     return g
-
-def get_grades_for_student(student_id: int):
-    """
-    Повертає всі оцінки для даного учня.
-    """
-    return Grade.query.filter_by(student_id=student_id).order_by(Grade.grade_id).all()
