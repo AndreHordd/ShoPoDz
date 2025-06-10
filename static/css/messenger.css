@@ -76,3 +76,19 @@
 .hw-modal textarea { width:100%; height:80px; }
 .hw-modal input[type=date] { font-size:1rem; padding:.3rem; }
 .hw-modal button { margin-top:1rem; background: var(--primary); color:#fff; border:none; padding:.5rem 1.2rem; border-radius:5px; cursor:pointer; }
+.chat-date-divider {
+  text-align: center;
+  margin: 12px 0 5px 0;
+  color: #8092ac;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+.chat-date-divider span {
+  background: #f4f6fa;
+  padding: 3px 15px;
+  border-radius: 13px;
+  border: 1px solid #e2eaf2;
+  box-shadow: 0 2px 8px #2222ff06;
+}

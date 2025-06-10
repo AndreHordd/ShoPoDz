@@ -4,40 +4,113 @@
   <meta charset="UTF-8">
   <title>📨 Месенджер | ShoPoDz</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/messenger.css') }}">
+  <!-- Для emoji/іконок можна підключити FontAwesome (опціонально) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    body { background: #f4f6fa; margin:0; padding:0; }
+    .container { display: flex; min-height: 100vh; }
+    .sidebar {
+      min-width: 210px; background: #223b60; color: #fff; padding: 32px 18px;
+      box-shadow: 2px 0 14px #2044880c;
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .sidebar h2 { font-size: 1.5rem; margin-bottom: 2.2rem; letter-spacing: 0.5px; }
+    .menu { list-style: none; padding: 0; margin: 0; width: 100%; }
+    .menu li { margin-bottom: 1rem; }
+    .menu li.active a, .menu li a:hover { background: #3877ec; color: #fff; border-radius: 8px; }
+    .menu a { color: inherit; text-decoration: none; display: block; padding: 8px 12px; transition: 0.15s; }
+
+    .messenger-content { flex:1; display: flex; }
+    .messenger-sidebar {
+      width: 250px; background: #fff; border-right: 1.5px solid #e6eaf0;
+      display: flex; flex-direction: column; gap: 0; min-height: 100vh;
+      box-shadow: 1px 0 10px #20448813;
+    }
+    .class-list, .parent-list { list-style: none; margin:0; padding:0; }
+    .class-btn, .parent-btn {
+      width: 100%; background: none; border:none;
+      padding: 12px 14px; text-align:left; font-size: 1rem;
+      cursor:pointer; border-bottom: 1px solid #edf0f8;
+      transition: background 0.15s, color 0.18s;
+    }
+    .class-btn.active, .parent-btn.active { background: #e6f0ff; color: #186cce; font-weight: 600;}
+    .class-btn:hover, .parent-btn:hover { background: #f3f7fd; }
+    .messenger-main {
+      flex:1; display: flex; flex-direction: column; background: #f4f6fa;
+      min-height: 100vh; max-width: 800px; margin: 0 auto;
+    }
+    .chat-header {
+      background: #e6f0ff; font-size: 1.15rem; font-weight: 500;
+      color: #2d384a; padding: 15px 20px; border-bottom: 1px solid #dde7f6;
+    }
+    .messages {
+      flex: 1; overflow-y: auto; padding: 24px 22px 0 22px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .message {
+      max-width: 55%; padding: 11px 15px; border-radius: 18px;
+      font-size: 1rem; background: #eaf4ff; color: #15314e; box-shadow: 0 1px 7px #2d76e214;
+      align-self: flex-start; position: relative;
+      word-break: break-word;
+    }
+    .message.you { background: #3877ec; color: #fff; align-self: flex-end; }
+    .message time {
+      display: block; font-size: 0.82em; margin-top: 2px; opacity: 0.62; text-align: right;
+    }
+    .chat-input-panel {
+      display: flex; padding: 16px 20px; border-top: 1px solid #dde7f6; gap: 10px;
+      background: #fafdff;
+    }
+    #msg-text {
+      flex: 1; padding: 9px 15px; border-radius: 14px; border: 1.3px solid #e6eaf0;
+      font-size: 1.05rem; outline: none; transition: border 0.2s;
+    }
+    #msg-text:focus { border: 1.5px solid #388aff; }
+    #send-btn {
+      background: #388aff; color: #fff; border:none; border-radius: 10px;
+      font-size: 1.16rem; font-weight: 600; padding: 9px 19px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    #send-btn:hover { background: #2d76e2; }
+    .no-messages { color: #aaa; text-align: center; margin: 60px 0; }
+    @media (max-width:800px){ .messenger-sidebar{display:none;} .messenger-content{flex-direction:column;} }
+  </style>
   <script>
     window.CURRENT_USER_ID = {{ session.user_id|tojson }};
     window.BASE = "{{ request.host_url.rstrip('/') }}";
   </script>
 </head>
 <body>
-  <div class="container">
-    <aside class="sidebar">
-      <h2>👨‍🏫 Вчитель</h2>
-      <ul class="menu">
-        <li><a href="{{ url_for('teacher_schedule') }}">📅 Розклад</a></li>
-        <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Класи</a></li>
-        <li><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
-        <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Дз</a></li>
-        <li class="active"><a href="{{ url_for('messenger.teacher_messenger') }}">📨 Месенджер</a></li>
-      </ul>
-    </aside>
-    <main class="messenger-content">
-      <div class="sidebar-panel">
-        <h3>Ваші класи</h3>
-        <div id="class-list"></div>
-        <h3>Батьки</h3>
-        <ul id="parent-list"></ul>
+<div class="container">
+  <aside class="sidebar">
+    <h2>👨‍🏫 Вчитель</h2>
+    <ul class="menu">
+      <li><a href="{{ url_for('teacher_schedule') }}">📅 Розклад</a></li>
+      <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Класи</a></li>
+      <li><a href="{{ url_for('grade.teacher_grades') }}">📝 Оцінки</a></li>
+      <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Дз</a></li>
+      <li class="active"><a href="{{ url_for('messenger.teacher_messenger') }}">📨 Месенджер</a></li>
+    </ul>
+  </aside>
+  <div class="messenger-content">
+    <!-- Ліва панель: класи, батьки -->
+    <div class="messenger-sidebar">
+      <div style="padding:20px 12px 8px 12px; font-weight:600; color:#204488;">Ваші класи</div>
+      <ul class="class-list" id="class-list"></ul>
+      <div style="padding:14px 12px 8px 12px; font-weight:600; color:#204488;">Батьки</div>
+      <ul class="parent-list" id="parent-list"></ul>
+    </div>
+    <!-- Основний чат -->
+    <div class="messenger-main">
+      <div class="chat-header" id="chat-header">Оберіть клас</div>
+      <div id="messages" class="messages"></div>
+      <div class="chat-input-panel">
+        <input type="text" id="msg-text" placeholder="Введіть повідомлення..." autocomplete="off"/>
+        <button id="send-btn" title="Надіслати"><i class="fa fa-paper-plane"></i></button>
       </div>
-      <div class="chat-panel">
-        <h3 id="chat-header">Оберіть клас</h3>
-        <div id="messages" class="messages"></div>
-        <div class="send-panel">
-          <input type="text" id="msg-text" placeholder="Повідомлення…" />
-          <button id="send-btn">▶️</button>
-        </div>
-      </div>
-    </main>
+    </div>
   </div>
-  <script src="{{ url_for('static', filename='js/messenger.js') }}"></script>
+</div>
+<script src="{{ url_for('static', filename='js/messenger.js') }}"></script>
 </body>
 </html>

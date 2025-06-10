@@ -11,15 +11,15 @@
         <aside class="sidebar">
             <h2>👨‍🏫 Вчитель</h2>
             <ul class="menu">
-                <a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a>
-                <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
-                <li class="active"><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
-                <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Домашні завдання</a></li>
-                <li><a href="#">✅ Відвідуваність</a></li>
-                <li><a href="#">📖 Журнал учня</a></li>
-                <li><a href="#">📨 Месенджер</a></li>
-                <li><a href="#">🖊️ Підписи в щоденнику</a></li>
-            </ul>
+    <li><a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a></li>
+    <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
+    <li><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
+    <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Домашні завдання</a></li>
+    <li><a href="#">✅ Відвідуваність</a></li>
+    <li><a href="#">📖 Журнал учня</a></li>
+    <li><a href="{{ url_for('messenger.teacher_messenger') }}">📨 Месенджер</a></li>
+    <li><a href="#">🖊️ Підписи в щоденнику</a></li>
+</ul>
         </aside>
 
         <main class="content">

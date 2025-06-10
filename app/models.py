@@ -113,3 +113,36 @@ class ParentSignature(db.Model):
                              default=datetime.utcnow)
 
     # унікальність по всьому timestamp залишаємо — дубль малоймовірний
+
+
+class Message(db.Model):
+    __tablename__ = 'messages'
+
+    message_id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    text = db.Column(db.Text, nullable=False)
+
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
+
+class Parent(db.Model):
+    __tablename__ = 'parents'
+
+    user_id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    # (інші потрібні поля)
+
+class Teacher(db.Model):
+    __tablename__ = 'teachers'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    middle_name = db.Column(db.String(100))
+    salary = db.Column(db.Numeric(10,2), nullable=False)
+    birth_date = db.Column(db.Date, nullable=False)
+    hire_date = db.Column(db.Date, nullable=False)
+
+    user = db.relationship('User', backref='teacher', uselist=False)
