@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from app.models import db, Lesson, LessonSession, Homework
 
 def get_teacher_homework_week(teacher_id, week_start):
@@ -46,40 +46,44 @@ def get_teacher_homework_week(teacher_id, week_start):
     return week
 
 
-def add_homework(lesson_id, description, deadline):
+def add_homework(teacher_id, class_id, subject_id, description, deadline):
     """
     Додає або оновлює домашнє завдання для конкретної сесії уроку (LessonSession).
     Якщо сесія для цієї дати і уроку не існує — повертає помилку.
     """
-    # 1. Парсимо дедлайн
     if isinstance(deadline, str):
         try:
             deadline = datetime.fromisoformat(deadline)
         except ValueError:
             return False, "Невірний формат дати дедлайну"
 
-    # 2. Шукаємо урок
-    lesson = Lesson.query.get(lesson_id)
+    # Знаходимо Lesson саме для дня дедлайну
+    lesson = (
+        Lesson.query
+        .filter_by(
+            teacher_id=teacher_id,
+            class_id=class_id,
+            subject_id=subject_id,
+            day=deadline.date().isoweekday()
+        )
+        .first()
+    )
     if not lesson:
-        return False, "Такого уроку не знайдено"
+        return False, "У цей день у вас немає цього уроку"
 
-    # 3. Забороняємо дедлайн у минулому
+    # Забороняємо дедлайн у минулому
     if deadline.date() < date.today():
         return False, "Неможливо задати дедлайн у минулому"
 
-    # 4. Перевіряємо, що дедлайн (дата) відповідає дню тижня цього уроку
-    if deadline.date().isoweekday() != lesson.day:
-        return False, "У цей день у вас немає цього уроку"
-
-    # 5. Шукаємо сесію уроку на цю дату
+    # Шукаємо сесію уроку на цю дату
     session = LessonSession.query.filter_by(
-        lesson_id=lesson_id,
+        lesson_id=lesson.lesson_id,
         session_date=deadline.date()
     ).first()
     if not session:
-        return False, "У цей день у вас немає цього уроку"
+        return False, "У цей день у вас немає цього уроку (немає сесії)"
 
-    # 6. Перевіряємо, чи вже є Homework для цієї сесії
+    # Перевіряємо, чи вже є Homework для цієї сесії
     existing = Homework.query.filter_by(session_id=session.session_id).first()
     if existing:
         existing.description = description
@@ -87,7 +91,6 @@ def add_homework(lesson_id, description, deadline):
         db.session.commit()
         return True, existing
 
-    # 7. Додаємо новий запис
     hw = Homework(
         session_id=session.session_id,
         description=description,

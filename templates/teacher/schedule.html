@@ -4,50 +4,68 @@
     <meta charset="UTF-8">
     <title>📅 Мій розклад</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
-
 </head>
 <body>
 <div class="container">
     <aside class="sidebar">
-        <h2>👨‍🏫 Вчитель</h2>
-        <ul class="menu">
-            <li class="active"><a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a></li>
-            <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
-            <li><a href="#">📝 Виставити оцінки</a></li>
-            <li class="active"><a href="{{ url_for('homework.teacher_homework') }}">📚 Домашні завдання</a></li>
-            <li><a href="#">✅ Відвідуваність</a></li>
-            <li><a href="#">📖 Журнал учня</a></li>
-            <li><a href="#">📨 Месенджер</a></li>
-            <li><a href="#">🖊️ Підписи в щоденнику</a></li>
-        </ul>
-    </aside>
+            <h2>👨‍🏫 Вчитель</h2>
+            <ul class="menu">
+    <li><a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a></li>
+    <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
+    <li><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
+    <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Домашні завдання</a></li>
+    <li><a href="{{ url_for('attendance_bp.teacher_attendance') }}">✅ Відвідуваність</a></li>
+
+    <li><a href="#">📖 Журнал учня</a></li>
+    <li><a href="{{ url_for('messenger.teacher_messenger') }}">📨 Месенджер</a></li>
+    <li><a href="#">🖊️ Підписи в щоденнику</a></li>
+</ul>
+        </aside>
 
     <main class="content">
         <h1>Мій розклад</h1>
-        <div class="schedule-card">
-            <table class="schedule-table">
-                <thead>
-                <tr>
-                    <th>День</th><th>Початок</th><th>Кінець</th>
-                    <th>Клас</th><th>Предмет</th><th>Кабінет</th>
-                </tr>
-                </thead>
-                <tbody id="schedule-body">
-                {% for row in lessons %}
-                    <tr>
-                        <td>{{ ["","Понеділок","Вівторок","Середа","Четвер","Пʼятниця","Субота","Неділя"][row.day] }}</td>
-                        <td>{{ row.start_time }}</td>
-                        <td>{{ row.end_time }}</td>
-                        <td>{{ row.class }}</td>
-                        <td>{{ row.subject }}</td>
-                        <td>{{ row.room_number }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <div class="schedule-days">
+    {% set days = ["", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота", "Неділя"] %}
+    {% for day_num in range(1, 8) %}
+        {% set day_lessons = lessons | selectattr("day", "equalto", day_num) | list %}
+        {% if day_lessons %}
+        <section class="day-card" style="margin-bottom:2.3rem;">
+            <div class="day-header" style="margin-bottom:0.8rem; border-bottom:1px solid #e3e7ef; display:flex; align-items:center; justify-content:space-between;">
+                <span class="day-title" style="font-size:1.18rem; color:var(--primary); font-weight:600;">{{ days[day_num] }}</span>
+                <span class="lesson-count" style="font-size:0.99rem; color:var(--muted); font-weight:400;">{{ day_lessons|length }} урок{{ 'и' if day_lessons|length in [2,3,4] else '' }}</span>
+            </div>
+            <div class="schedule-card" style="box-shadow:none; padding:0; border:none; background:none;">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Початок</th>
+                            <th>Кінець</th>
+                            <th>Клас</th>
+                            <th>Предмет</th>
+                            <th>Кабінет</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in day_lessons %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ row.start_time }}</td>
+                            <td>{{ row.end_time }}</td>
+                            <td>{{ row.class }}</td>
+                            <td>{{ row.subject }}</td>
+                            <td>{{ row.room_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+    {% endfor %}
+</div>
+
     </main>
 </div>
-<script src="{{ url_for('static', filename='js/teacher_schedule.js') }}"></script>
 </body>
 </html>

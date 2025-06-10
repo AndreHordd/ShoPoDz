@@ -13,56 +13,64 @@
       <ul class="menu">
         <li><a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a></li>
         <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
-        <li><a href="#">📝 Виставити оцінки</a></li>
-        <li class="active"><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
-        <li><a href="#">📚 Домашні завдання</a></li>
-        <!-- інші пункти… -->
+        <li><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
+        <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Домашні завдання</a></li>
+        <li><a href="{{ url_for('attendance_bp.teacher_attendance') }}">✅ Відвідуваність</a></li>
+        <li><a href="#">📖 Журнал учня</a></li>
+        <li><a href="{{ url_for('messenger.teacher_messenger') }}">📨 Месенджер</a></li>
+        <li><a href="#">🖊️ Підписи в щоденнику</a></li>
       </ul>
     </aside>
 
     <!-- MAIN CONTENT -->
     <main class="grades-content">
-      <div class="hw-header">
-        <button id="prev-week">← Попередній тиждень</button>
-        <span>{{ week_start }} — {{ week_end }}</span>
-        <button id="next-week">Наступний тиждень →</button>
+      <div class="hw-header" style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 16px;">
+        <button id="prev-week" style="font-size: 19px;">←</button>
+        <span style="font-weight:500;">{{ week_start }} — {{ week_end }}</span>
+        <button id="next-week" style="font-size: 19px;">→</button>
       </div>
 
+      {% set weekday_names = {
+        0: 'Понеділок',
+        1: 'Вівторок',
+        2: 'Середа',
+        3: 'Четвер',
+        4: "Пʼятниця",
+        5: 'Субота',
+        6: 'Неділя'
+      } %}
       {% for day in grades_data %}
-        <h4 style="margin:16px 0 8px">
-          {{ day.date.strftime('%A, %d.%m') }}
-        </h4>
-
         {% if day.lessons %}
-<table class="hw-table">
-  <thead>
-    <tr>
-      <th>Клас</th>
-      <th>Урок</th>
-      <th>Виставлені оцінки</th>
-      <th>Дії</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in day.lessons %}
-      <tr>
-        <td>{{ item.lesson.class_.class_number }}{{ item.lesson.class_.subclass }}</td>
-        <td>{{ item.lesson.subject.title }}</td>
-        <td>{{ item.grades|length }} / {{ item.class_size }}</td>
-        <td>
-          <button class="set-grade-btn"
-                  data-lesson="{{ item.lesson.lesson_id }}"
-                  data-class="{{ item.lesson.class_id }}"
-                  data-date="{{ item.date.isoformat() }}">
-            🏷 Виставити
-          </button>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-        {% else %}
-          <p>У цей день у вас немає уроків</p>
+          <h4 style="margin:16px 0 8px; color:#176dde; font-weight:600;">
+            {{ weekday_names[day.date.weekday()] }}, {{ day.date.strftime('%d.%m') }}
+          </h4>
+          <table class="hw-table">
+            <thead>
+              <tr>
+                <th>Клас</th>
+                <th>Урок</th>
+                <th>Виставлені оцінки</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in day.lessons %}
+                <tr>
+                  <td>{{ item.lesson.class_.class_number }}{{ item.lesson.class_.subclass }}</td>
+                  <td>{{ item.lesson.subject.title }}</td>
+                  <td>{{ item.grades|length }} / {{ item.class_size }}</td>
+                  <td>
+                    <button class="set-grade-btn"
+                            data-lesson="{{ item.lesson.lesson_id }}"
+                            data-class="{{ item.lesson.class_id }}"
+                            data-date="{{ item.date.isoformat() }}">
+                      🏷 Виставити
+                    </button>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         {% endif %}
       {% endfor %}
     </main>

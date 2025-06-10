@@ -47,18 +47,17 @@ class Grade(db.Model):
     session = db.relationship('LessonSession', backref='grades', lazy=True)
 
 class Attendance(db.Model):
-    __tablename__ = 'attendance'  # або 'attendances', якщо у вашій БД саме так
-
+    __tablename__ = 'attendance'
     attendance_id = db.Column(db.Integer, primary_key=True)
-    student_id    = db.Column(db.Integer, db.ForeignKey('students.user_id'), nullable=False)
-    lesson_id     = db.Column(db.Integer, db.ForeignKey('lessons.lesson_id'),  nullable=False)
-    status        = db.Column(db.String(20), nullable=False)  # наприклад, 'present', 'absent' тощо
-    comment       = db.Column(db.Text)
+    session_id = db.Column(db.Integer, db.ForeignKey('lesson_sessions.session_id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.user_id'), nullable=False)
+    status = db.Column(db.String(16), nullable=False)   # present/absent/late/excused
+    comment = db.Column(db.String(255))
+    # ... можливо, інші поля
 
-    # Зв’язки для зручності:
-    student = db.relationship('Student', backref='attendances', lazy=True)
-    lesson  = db.relationship('Lesson',  backref='attendances', lazy=True)
-
+    # Звʼязки (optional)
+    session = db.relationship('LessonSession', backref='attendances')
+    student = db.relationship('Student', backref='attendances')
 
 class ParentSignature(db.Model):
     """
@@ -134,6 +133,7 @@ class Student(db.Model):
     first_name  = db.Column(db.String(100), nullable=False)
     last_name   = db.Column(db.String(100), nullable=False)
     class_id    = db.Column(db.Integer, db.ForeignKey('classes.class_id'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('parents.user_id'))
 
 class Class(db.Model):
     __tablename__ = 'classes'
