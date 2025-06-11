@@ -1,31 +1,220 @@
+<!-- templates/parent/parent_dashboard.html -->
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <title>Панель батьків | ShoPoDZ</title>
-    <link rel="stylesheet" href="/static/css/parent_styles.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>🏠 Дашборд | ShoPoDz</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/parent.css') }}">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style>
+    .dashboard-flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: flex-start;
+      margin-top: 2rem;
+    }
+    .dashboard-left {
+      flex: 2 1 400px;
+      min-width: 350px;
+      max-width: 640px;
+    }
+    .dashboard-right {
+      flex: 1 1 320px;
+      min-width: 290px;
+    }
+    .dashboard-row { display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .dashboard-card {
+      background: #fff; border-radius: 12px; padding: 1.5rem 2rem; box-shadow: 0 2px 8px #0001;
+      min-width: 210px; flex: 1 0 210px;
+      display: flex; flex-direction: column; align-items: start;
+      margin-bottom: 1rem;
+    }
+    .dashboard-card h3 { margin-top: 0; font-size: 1.2rem; }
+    .dashboard-card .status.signed   { color: green; font-weight: bold; }
+    .dashboard-card .status.unsigned { color: #b30000; font-weight: bold; }
+    .dashboard-card .grade, .dashboard-card .attendance { font-size: 2.2rem; margin: 0.5rem 0 0.4rem 0; }
+    .dashboard-card .text-muted { font-size: 0.9rem; color: #777; }
+    .news-block { background: #f9f9f9; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 2rem; }
+    .news-block ul { padding-left: 1.1em; }
+    .calendar-container-big {
+      background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0001;
+      padding: 2rem 1.7rem 1.5rem 1.7rem; margin-bottom: 1.5rem;
+      min-width: 330px; max-width: 380px;
+      margin-left: auto; margin-right: auto;
+    }
+    .calendar-title {
+      text-align: center;
+      margin: 0 0 0.8rem 0;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 2.4em);
+      gap: 0.6em 0.6em;
+      justify-content: center;
+      margin-top: 0.5em;
+    }
+    .calendar-header {
+      background: #f5f5f5;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 7px;
+      padding: 0.3em 0 0.2em 0;
+      font-size: 1.07em;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 0.1em;
+      min-width: 2.4em;
+      min-height: 2.2em;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .calendar-day {
+      width: 2.4em; height: 2.4em;
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-weight: bold; border: 1.5px solid #ccc; background: #eee; font-size: 1.20em;
+      transition: box-shadow 0.14s;
+      margin: 0;
+    }
+    .calendar-day.signed   { background: #c5f7c2; border-color: #7cde7e; }
+    .calendar-day.unsigned { background: #ffd6d6; border-color: #f29191; }
+    .calendar-day.today    { box-shadow: 0 0 0 3px #228ee4 inset; background: #e3f3ff; }
+    .calendar-day.empty { background: transparent; border: none; pointer-events: none; }
+    @media (max-width: 1024px) {
+      .dashboard-flex { flex-direction: column; gap: 1rem; }
+      .dashboard-right, .calendar-container-big { max-width: 100%; min-width: 0; }
+    }
+    .welcome-toast,
+.toast {
+  position: fixed;
+  top: 1.2rem;
+  right: 1.2rem;
+  z-index: 1000;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateX(100%);
+  animation: slideIn 0.5s forwards, fadeOut 0.5s 3s forwards;
+}
+.welcome-toast { background: #31717b; }
+.toast.alert-danger { background: #c12e2a; }
+.toast.alert-info { background: #31708f; }
+
+@keyframes slideIn {
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+
+  </style>
 </head>
 <body>
-<nav class="sidebar">
-    <div class="logo">#ShoPoDZ</div>
-   <ul class="menu">
-  <li><a href="{{ url_for('parent.parent_dashboard') }}">🏠 Дашборд</a></li>
-  <li><a href="{{ url_for('parent.parent_diary') }}">📓 Щоденник</a></li>
-  <li><a href="{{ url_for('parent.parent_diary') }}#grades">📊 Оцінки</a></li>
-  <li><a href="{{ url_for('parent.parent_diary') }}#homework">📚 Домашні завдання</a></li>
-  <li><a href="{{ url_for('parent.parent_diary') }}#attendance">✅ Відвідуваність</a></li>
-  <li><a href="{{ url_for('messenger.parent_messenger') }}">📨 Месенджер</a></li>
-  <li><a href="#">🖊️ Підписи в щоденнику</a></li>
-</ul>
-</nav>
-<main class="main-content">
-    <header>
-        <h1>Панель батьків</h1>
-        <p>Перевіряйте успіхи, розклад та обговорюйте питання з учителями!</p>
-    </header>
-    <div id="modal" class="modal" style="display: none;"></div>
-</main>
-<script src="/static/js/parent.js"></script>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+      {% if category == 'welcome' %}
+        <div id="welcome-toast" class="welcome-toast">{{ msg }}</div>
+      {% endif %}
+      {% if category == 'danger' %}
+        <div class="alert alert-danger toast">{{ msg }}</div>
+      {% endif %}
+      {% if category == 'info' %}
+        <div class="alert alert-info toast">{{ msg }}</div>
+      {% endif %}
+    {% endfor %}
+  {% endwith %}
+<div class="container">
+  <aside class="sidebar">
+  <h2>👪 Батьки</h2>
+  <ul class="menu">
+    <li {% if request.endpoint=='parent.parent_dashboard' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_dashboard') }}">🏠 Дашборд</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_diary' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_diary') }}">📓 Щоденник</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_announcements' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_announcements') }}">📨 Оголошення</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_attendance' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_attendance') }}">📊 Відвідуваність</a>
+    </li>
+    <li {% if request.endpoint=='messenger.parent_messenger' %}class="active"{% endif %}>
+      <a href="{{ url_for('messenger.parent_messenger') }}">💬 Месенджер</a>
+    </li>
+    <li>
+    <a href="{{ url_for('auth.logout') }}" class="logout-link">🚪 Вийти</a>
+  </li>
+  </ul>
+</aside>
+
+  <main class="content dashboard-content">
+    <h1>🏠 Вітаємо, {{ parent.first_name }}!</h1>
+    <div class="dashboard-flex">
+      <div class="dashboard-left">
+        <div class="dashboard-row">
+          <div class="card dashboard-card">
+            <h3>Підпис щоденника</h3>
+            {% if last_ack %}
+              <div class="status signed">✅ Останній підпис: {{ last_ack.strftime('%d.%m.%Y %H:%M') }}</div>
+            {% else %}
+              <div class="status unsigned">❗ Ще не підписано</div>
+            {% endif %}
+          </div>
+          <div class="card dashboard-card">
+            <h3>Середній бал</h3>
+            <div class="grade">{{ avg_grade or "—" }}</div>
+            <span class="text-muted">за останній тиждень</span>
+          </div>
+          <div class="card dashboard-card">
+            <h3>Відвідуваність</h3>
+            <div class="attendance">{{ attendance_percent or "—" }}%</div>
+            <span class="text-muted">за останній тиждень</span>
+          </div>
+        </div>
+        <div class="news-block">
+          <h2>📰 Що нового?</h2>
+          <ul>
+            {% for news in news_list %}
+              <li>{{ news }}</li>
+            {% else %}
+              <li>Немає новин</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="calendar-container-big">
+        <h4 class="calendar-title">{{ month_name|capitalize }}</h4>
+        <div class="calendar-grid">
+          {% for wd in ['Пн','Вт','Ср','Чт','Пт','Сб','Нд'] %}
+            <div class="calendar-header">{{ wd }}</div>
+          {% endfor %}
+          {% set first_weekday = month_dates[0].weekday() %}
+          {% for _ in range(first_weekday) %}
+            <div class="calendar-day empty"></div>
+          {% endfor %}
+          {% for d in month_dates %}
+            <div class="calendar-day
+              {% if d in signature_dates_month %}signed{% elif d < today %}unsigned{% endif %}
+              {% if d == today %} today{% endif %}">
+              {{ d.day }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toast = document.querySelector('.welcome-toast, .toast');
+      if (!toast) return;
+      // Після 3.5s прибрати елемент
+      setTimeout(() => toast.remove(), 4000);
+    });
+  </script>
 </body>
 </html>

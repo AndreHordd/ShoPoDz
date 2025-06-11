@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>📨 Оголошення | ShoPoDz</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/parent.css') }}">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style>
+    .content { margin-left: 320px; padding: 2rem 1.5rem; background: #f4f6f8; }
+    h1 { font-size: 2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5em; }
+    .announcement-list { display: flex; flex-direction: column; gap: 1rem; }
+    .announcement-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .announcement-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .announcement-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1.2rem;
+      color: #31717b;
+    }
+    .announcement-card .date {
+      font-size: 0.9rem;
+      color: #777;
+      margin-bottom: 0.8rem;
+      display: block;
+    }
+    .announcement-card p {
+      margin: 0;
+      line-height: 1.5;
+      color: #333;
+    }
+    @media (max-width: 800px) {
+      .content { padding: 1rem; margin-left: 90px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+  <h2>👪 Батьки</h2>
+  <ul class="menu">
+    <li {% if request.endpoint=='parent.parent_dashboard' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_dashboard') }}">🏠 Дашборд</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_diary' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_diary') }}">📓 Щоденник</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_announcements' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_announcements') }}">📨 Оголошення</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_attendance' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_attendance') }}">📊 Відвідуваність</a>
+    </li>
+    <li {% if request.endpoint=='messenger.parent_messenger' %}class="active"{% endif %}>
+      <a href="{{ url_for('messenger.parent_messenger') }}">💬 Месенджер</a>
+    </li>
+      <li>
+    <a href="{{ url_for('auth.logout') }}" class="logout-link">🚪 Вийти</a>
+  </li>
+  </ul>
+</aside>
+
+
+    <main class="content">
+      <h1>📨 Оголошення</h1>
+      <div class="announcement-list">
+        {% for ann in announcements %}
+          <div class="announcement-card">
+            <h3>{{ ann.title }}</h3>
+            <span class="date">{{ ann.date.strftime('%d.%m.%Y') }}</span>
+            <p>{{ ann.text }}</p>
+          </div>
+        {% else %}
+          <p>Немає оголошень.</p>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+</body>
+</html>

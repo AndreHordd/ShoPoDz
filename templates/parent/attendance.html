@@ -1,0 +1,220 @@
+<!-- templates/parent/attendance.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>📊 Відвідуваність | ShoPoDz</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/parent.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    body { margin:0; background:#f4f6f8; }
+    .container { display:flex; min-height:100vh; }
+    .sidebar {
+      width:300px;
+      background: linear-gradient(180deg, #4a817c, #36716b);
+      color:#fff;
+      padding:2.5rem 1.5rem;
+      box-shadow:2px 0 14px rgba(0,0,0,0.1);
+      position:fixed; top:0; bottom:0; left:0;
+      overflow-y:auto;
+    }
+    .sidebar h2 {
+      font-size:1.75rem;
+      margin-bottom:2rem;
+      letter-spacing:0.5px;
+    }
+    .sidebar .menu { list-style:none; padding:0; margin:0; }
+    .sidebar .menu li { margin-bottom:1rem; }
+    .sidebar .menu li a {
+      display:flex; align-items:center; gap:0.5rem;
+      color:#fff; text-decoration:none;
+      padding:0.75rem 1.25rem; border-radius:8px;
+      font-size:1.1rem;
+      transition:background 0.25s,transform 0.25s;
+    }
+    .sidebar .menu li.active a,
+    .sidebar .menu li a:hover {
+      background:rgba(255,255,255,0.2);
+      transform:translateX(6px);
+      box-shadow:inset 4px 0 0 rgba(255,255,255,0.3);
+    }
+
+    main.content {
+      margin-left:300px;
+      padding:2rem 1.5rem;
+    }
+    .page-header {
+      display:flex; justify-content:space-between; align-items:center;
+      flex-wrap:wrap; margin-bottom:1.5rem;
+    }
+    .page-header h1 {
+      font-size:1.75rem; margin:0; display:flex; align-items:center; gap:0.5rem;
+    }
+    .header-widgets {
+      display:flex; align-items:center; gap:1rem;
+    }
+    .attendance-summary {
+      background:#fff; border-radius:12px; padding:1rem 1.2rem;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1); text-align:center;
+      transition:transform .25s,box-shadow .25s;
+    }
+    .attendance-summary:hover {
+      transform:translateY(-3px);
+      box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    }
+    .attendance-summary h3 {
+      margin:0; font-size:1rem; color:#555;
+    }
+    .attendance-summary .value {
+      font-size:1.5rem; font-weight:700; margin-top:0.4rem; color:#31717b;
+    }
+    /* Замість цього — приберіть абсолютне позиціонування */
+.btn-logout {
+  /* position: absolute; */
+  /* top: 1rem; */
+  /* right: 1.5rem; */
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  /* z-index: 100; */  /* теж приберіть */
+}
+
+    .btn-logout:hover {
+      background:#c82333; transform:translateY(-2px);
+    }
+
+    .attendance-table-block {
+      background:#fff; border-radius:12px; padding:1rem;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1); overflow-x:auto;
+    }
+    table.att-table {
+      width:100%; border-collapse:collapse; min-width:500px;
+    }
+    table.att-table thead { background:#eef2f7; }
+    table.att-table th, table.att-table td {
+      padding:.8rem 1rem; border-bottom:1px solid #e5e9ef;
+      text-align:left; font-size:1rem;
+    }
+    table.att-table th { font-weight:600; color:#333; }
+    table.att-table tbody tr:hover { background:#f0f4fb; }
+    .status-present { color:#2f855a; font-weight:600; }
+    .status-absent  { color:#c53030; font-weight:600; }
+    .status-late    { color:#dd6b20; font-weight:600; }
+    .status-excused { color:#3182ce; font-weight:600; }
+    @media(max-width:800px){
+      main.content{padding:1rem;margin-left:90px;}
+      table.att-table{min-width:100%;}
+    }
+    /* У parent.css або в стилях сторінки */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;       /* достатній простір між карткою та кнопкою */
+  flex-wrap: wrap; /* на мобілці перенесе кнопку вниз */
+}
+
+.header-widgets {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.attendance-summary {
+  flex-shrink: 0;
+}
+
+.btn-logout {
+  flex-shrink: 0;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>👪 Батьки</h2>
+      <ul class="menu">
+        <li {% if request.endpoint=='parent.parent_dashboard' %}class="active"{% endif %}>
+          <a href="{{ url_for('parent.parent_dashboard') }}">🏠 Дашборд</a>
+        </li>
+        <li {% if request.endpoint=='parent.parent_diary' %}class="active"{% endif %}>
+          <a href="{{ url_for('parent.parent_diary') }}">📓 Щоденник</a>
+        </li>
+        <li {% if request.endpoint=='parent.parent_announcements' %}class="active"{% endif %}>
+          <a href="{{ url_for('parent.parent_announcements') }}">📨 Оголошення</a>
+        </li>
+        <li {% if request.endpoint=='parent.parent_attendance' %}class="active"{% endif %}>
+          <a href="{{ url_for('parent.parent_attendance') }}">📊 Відвідуваність</a>
+        </li>
+        <li {% if request.endpoint=='messenger.parent_messenger' %}class="active"{% endif %}>
+          <a href="{{ url_for('messenger.parent_messenger') }}">💬 Месенджер</a>
+        </li>
+        <li>
+    <a href="{{ url_for('auth.logout') }}" class="logout-link">🚪 Вийти</a>
+  </li>
+      </ul>
+    </aside>
+
+    <main class="content dashboard-content">
+      <div class="page-header">
+  <h1>📊 Відвідуваність: {{ student.first_name }} {{ student.last_name }}</h1>
+  <div class="header-widgets">
+    <div class="attendance-summary">
+      <h3>Відвідуваність за весь час</h3>
+      <div class="value">{{ attendance_percent or "—" }}%</div>
+    </div>
+    <!-- Перенесли кнопку праворуч і задали відступ -->
+  </div>
+</div>
+
+
+      <div class="attendance-table-block">
+        <table class="att-table">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Предмет</th>
+              <th>Статус</th>
+              <th>Коментар</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for date, subj, status, comment in attendance_list %}
+              <tr>
+                <td>{{ date.strftime('%d.%m.%Y') }}</td>
+                <td>{{ subj }}</td>
+                <td class="status-{{ status }}">
+                  {{ {
+                    'present':'Присутній',
+                    'absent':'Відсутній',
+                    'late':'Запізнився',
+                    'excused':'Поважна'
+                  }[status] }}
+                </td>
+                <td>{{ comment }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="4" style="text-align:center;color:#666;padding:2em;">
+                  Даних немає
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
