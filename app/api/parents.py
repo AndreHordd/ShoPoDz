@@ -177,17 +177,38 @@ def parent_dashboard():
 # ────────────────────────────────────────────────────────
 #  CRUD API /api/parents
 # ────────────────────────────────────────────────────────
-@parent_bp.route("/api/parents", methods=["GET"])
-def get_parents():
+@parent_bp.route("/api/parents/by-class", methods=["GET"])
+def get_parents_grouped_by_class():
     conn = get_db()
     with conn.cursor() as cur:
-        cur.execute("SELECT user_id, first_name, last_name, phone FROM parents")
+        cur.execute("""
+            SELECT 
+                p.user_id, p.first_name, p.last_name, p.phone,
+                CONCAT(c.class_number, '-', c.subclass) AS class_name,
+                c.class_id,
+                c.class_number,
+                c.subclass
+            FROM parents p
+            JOIN students s ON p.user_id = s.parent_id
+            JOIN classes c ON s.class_id = c.class_id
+            GROUP BY p.user_id, p.first_name, p.last_name, p.phone,
+                     c.class_number, c.subclass, c.class_id
+            ORDER BY c.class_number, c.subclass, p.last_name
+        """)
         rows = cur.fetchall()
-    return jsonify(
-        [dict(zip(["user_id", "first_name", "last_name", "phone"], r)) for r in rows]
-    )
 
+    from collections import defaultdict
+    result = defaultdict(list)
+    for user_id, first_name, last_name, phone, class_name, class_id, *_ in rows:
+        result[class_id].append({
+            "user_id": user_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "phone": phone,
+            "class_name": class_name
+        })
 
+    return jsonify(result)
 
 @parent_bp.route("/api/parents", methods=["POST"])
 def add_parent():

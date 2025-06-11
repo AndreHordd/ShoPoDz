@@ -613,6 +613,10 @@ function deleteAnnouncement(id) {
     }
 }
 
+let isStudentOpen = false;
+let isParentOpen = false;
+let isTeacherOpen = false;
+
 function showUserManagement() {
     const content = document.getElementById('main-content');
 
@@ -621,16 +625,46 @@ function showUserManagement() {
             <h2>Користувачі</h2>
             <button class="btn-primary" onclick="showAddUserForm()">➕ Додати користувача</button>
 
-            <h3><a href="#" onclick="showClassList()">Учні</a></h3>
+            <h3><a href="#" onclick="toggleStudentList()">Учні</a></h3>
             <div id="student-list"></div>
 
-            <h3><a href="#" onclick="loadUserList('parent')">Батьки</a></h3>
+            <h3><a href="#" onclick="toggleParentList()">Батьки</a></h3>
             <div id="parent-list"></div>
 
-            <h3><a href="#" onclick="loadUserList('teacher')">Вчителі</a></h3>
+            <h3><a href="#" onclick="toggleTeacherList()">Викладачі</a></h3>
             <div id="teacher-list"></div>
         </section>
     `;
+}
+
+function toggleStudentList() {
+    const container = document.getElementById('student-list');
+    if (isStudentOpen) {
+        container.innerHTML = '';
+    } else {
+        showClassList();
+    }
+    isStudentOpen = !isStudentOpen;
+}
+
+function toggleParentList() {
+    const container = document.getElementById('parent-list');
+    if (isParentOpen) {
+        container.innerHTML = '';
+    } else {
+        showParentClassList();
+    }
+    isParentOpen = !isParentOpen;
+}
+
+function toggleTeacherList() {
+    const container = document.getElementById('teacher-list');
+    if (isTeacherOpen) {
+        container.innerHTML = '';
+    } else {
+        loadUserList('teacher');
+    }
+    isTeacherOpen = !isTeacherOpen;
 }
 
 function showClassList() {
@@ -648,6 +682,50 @@ function showClassList() {
                     `).join('')}
                 </ul>
             `;
+        });
+}
+
+function showParentsByClass(classId, className) {
+    const container = document.getElementById('parent-list');
+    container.innerHTML = `<p>Завантаження батьків...</p>`;
+
+    fetch('/api/parents/by-class')
+        .then(res => res.json())
+        .then(data => {
+            const parents = data[classId] || [];
+
+            container.innerHTML = `
+                <h4>Клас: ${className}</h4>
+                <ul>
+                    ${parents.map(p => `
+                        <li>
+                            ${p.last_name} ${p.first_name}
+                            <button class="btn-small" onclick="showEditUserForm('parent', ${p.user_id})">✏️ Редагувати</button>
+                            <button class="btn-small red" onclick="deleteUser('parent', ${p.user_id})">🗑️ Видалити</button>
+                        </li>
+                    `).join('')}
+                </ul>
+                <button onclick="showParentClassList()">← Назад до класів</button>
+            `;
+        });
+}
+
+function showParentClassList() {
+    const container = document.getElementById('parent-list');
+    container.innerHTML = `<p>Завантаження...</p>`;
+
+    fetch('/api/classes')
+        .then(res => res.json())
+        .then(classes => {
+            container.innerHTML = `<p>Оберіть клас:</p><ul>`;
+            classes.forEach(cls => {
+                container.innerHTML += `
+                    <li>
+                        <button class="btn-small" onclick="showParentsByClass(${cls.id}, '${cls.name}')">${cls.name}</button>
+                    </li>
+                `;
+            });
+            container.innerHTML += `</ul>`;
         });
 }
 
