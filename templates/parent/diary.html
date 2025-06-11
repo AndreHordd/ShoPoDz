@@ -1,146 +1,285 @@
+<!-- templates/parent/diary.html -->
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>📓 Щоденник | ShoPoDz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/parent.css') }}"
-  />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/parent.css') }}">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style>
+    body { background: #f4f6f8; }
+    .diary-flex {
+      display: flex;
+      gap: 2rem;
+      padding: 2rem 1.5rem;
+    }
+    .diary-left { flex: 2 1 600px; }
+    .diary-right { flex: 1 1 300px; }
+
+    .diary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      gap: 1rem;
+    }
+    .diary-header h1 {
+      font-size: 2rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .nav-week {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .nav-week a {
+      background: #fff;
+      border: 1px solid #31717b;
+      color: #31717b;
+      padding: 0.4em 0.8em;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .nav-week a:hover {
+      background: #31717b;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .ack-banner {
+      background: #d4edda;
+      color: #155724;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .summary-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .summary-card:hover { transform: translateY(-4px); }
+    .summary-card h3 { margin: 0; font-size: 1rem; color: #555; }
+    .summary-card .value { font-size: 1.5rem; font-weight: 700; margin-top: 0.5rem; }
+
+    .diary-table-block {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      overflow-x: auto;
+      padding: 1rem;
+    }
+    table.diary-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+    table.diary-table thead {
+      background: #eef2f7;
+    }
+    table.diary-table th,
+    table.diary-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #e5e9ef;
+      text-align: left;
+      font-size: 1rem;
+    }
+    table.diary-table th { font-weight: 600; color: #333; }
+    table.diary-table tbody tr {
+      transition: background 0.2s;
+    }
+    table.diary-table tbody tr:hover {
+      background: #f0f4fb;
+    }
+    .status-present { color: #2f855a; font-weight: 600; }
+    .status-absent  { color: #c53030; font-weight: 600; }
+    .status-late    { color: #dd6b20; font-weight: 600; }
+    .status-excused { color: #3182ce; font-weight: 600; }
+
+    /* Місячний календар */
+    .calendar-container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+    .calendar-container h4 {
+      text-align: center;
+      margin: 0 0 0.8rem;
+      font-size: 1.1rem;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 2.2em);
+      gap: 0.6em;
+      justify-content: center;
+    }
+    .calendar-header {
+      font-weight: bold;
+      text-align: center;
+      background: #f5f5f5;
+      border-radius: 6px;
+      padding: 0.3em 0;
+      font-size: 1em;
+      border: 1px solid #ddd;
+    }
+    .calendar-day {
+      width: 2.2em; height: 2.2em;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      background: #eee;
+      border: 1px solid #ccc;
+      font-size: 1em;
+      transition: background 0.2s;
+    }
+    .calendar-day.signed   { background: #c5f7c2; border-color: #7cde7e; }
+    .calendar-day.unsigned { background: #ffd6d6; border-color: #f29191; }
+    .calendar-day.today    { box-shadow: inset 0 0 0 2px #228ee4; background: #e3f3ff; }
+    .calendar-day.empty    { background: transparent; border: none; pointer-events: none; }
+
+    @media (max-width: 800px) {
+      .diary-flex { flex-direction: column; }
+      .diary-right, .diary-left { width: 100%; }
+      table.diary-table { min-width: 100%; }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <h2>👪 Батьки</h2>
-      <ul class="menu">
-  <li><a href="{{ url_for('parent.parent_dashboard') }}">🏠 Дашборд</a></li>
-  <li><a href="{{ url_for('parent.parent_diary') }}">📓 Щоденник</a></li>
-  <li><a href="{{ url_for('parent.parent_diary') }}#grades">📊 Оцінки</a></li>
-  <li><a href="{{ url_for('parent.parent_diary') }}#homework">📚 Домашні завдання</a></li>
-  <li><a href="{{ url_for('parent.parent_diary') }}#attendance">✅ Відвідуваність</a></li>
-  <li><a href="{{ url_for('messenger.parent_messenger') }}">📨 Месенджер</a></li>
-  <li><a href="#">🖊️ Підписи в щоденнику</a></li>
-</ul>
-    </aside>
+<div class="container">
+  <aside class="sidebar">
+  <h2>👪 Батьки</h2>
+  <ul class="menu">
+    <li {% if request.endpoint=='parent.parent_dashboard' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_dashboard') }}">🏠 Дашборд</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_diary' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_diary') }}">📓 Щоденник</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_announcements' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_announcements') }}">📨 Оголошення</a>
+    </li>
+    <li {% if request.endpoint=='parent.parent_attendance' %}class="active"{% endif %}>
+      <a href="{{ url_for('parent.parent_attendance') }}">📊 Відвідуваність</a>
+    </li>
+    <li {% if request.endpoint=='messenger.parent_messenger' %}class="active"{% endif %}>
+      <a href="{{ url_for('messenger.parent_messenger') }}">💬 Месенджер</a>
+    </li>
+    <li>
+    <a href="{{ url_for('auth.logout') }}" class="logout-link">🚪 Вийти</a>
+  </li>
+  </ul>
+</aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="content diary-content">
-      <h1>
-        📓 Щоденник: {{ student.first_name }} {{ student.last_name }}
-      </h1>
 
-      <!-- навігація по тижнях -->
-      <div class="week-nav">
-        <a
-          href="{{ url_for('parent.parent_diary', week_start=prev_week) }}"
-          class="btn btn-nav"
-          >← Попередній тиждень</a
-        >
-        <span class="week-range"
-          >{{ week_start.strftime('%d.%m.%Y') }} —
-          {{ week_end.strftime('%d.%m.%Y') }}</span
-        >
-        <a
-          href="{{ url_for('parent.parent_diary', week_start=next_week) }}"
-          class="btn btn-nav"
-          >Наступний тиждень →</a
-        >
+  <main class="content diary-flex">
+    <div class="diary-left">
+      <div class="diary-header">
+        <h1>📓 Щоденник: {{ student.first_name }} {{ student.last_name }}</h1>
+        <div class="nav-week">
+          <a href="{{ url_for('parent.parent_diary', week_start=prev_week) }}">← Попередній</a>
+          <span>{{ week_start.strftime('%d.%m.%Y') }} — {{ week_end.strftime('%d.%m.%Y') }}</span>
+          <a href="{{ url_for('parent.parent_diary', week_start=next_week) }}">Наступний →</a>
+        </div>
       </div>
 
-      <!-- кнопка / інфо ознайомлення -->
-      {% if not acknowledged %}
-      <div class="ack-container">
-        <form action="{{ url_for('parent.parent_diary_ack') }}" method="post">
-          <button
-            type="submit"
-            class="btn ack-btn"
-            {% if acknowledged %}disabled{% endif %}
-          >
-            👁 Я ознайомився(лась)
-          </button>
-        </form>
-      </div>
+      {% if not ack_today %}
+        <div class="ack-banner">
+          <form action="{{ url_for('parent.parent_diary_ack') }}" method="post">
+            <button type="submit" class="btn ack-btn">👁 Я ознайомився(лась)</button>
+          </form>
+        </div>
       {% else %}
-      <div class="alert alert-success ack-info">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="currentColor"
-          class="bi bi-check-circle-fill"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M16 8A8 8 0 11. . ."
-          />
-        </svg>
-        Ви ознайомились:
-        {{ acknowledged.strftime('%d.%m.%Y %H:%M') }}
-      </div>
+        <div class="ack-banner">✅ Ви ознайомились: {{ last_ack.strftime('%d.%m.%Y %H:%M') }}</div>
       {% endif %}
 
-      <!-- дні тижня -->
-      {% for day in diary %}
-      <section class="day-block mb-5">
-        <h3>
-          {{
-            ["","Понеділок","Вівторок","Середа",
-              "Четвер","Пʼятниця","Субота","Неділя"][day.date.isoweekday()]
-          }}
-          — {{ day.date.strftime('%d.%m.%Y') }}
-        </h3>
+      <div class="summary-grid">
+        {% set total=0 %}
+        {% set hw=0 %}
+        {% for sessions in diary.values() %}
+          {% set total = total + sessions|length %}
+          {% for s in sessions if s.homework!='—' %}
+            {% set hw = hw + 1 %}
+          {% endfor %}
+        {% endfor %}
+        <div class="summary-card"><h3>Усього уроків</h3><div class="value">{{ total }}</div></div>
+        <div class="summary-card"><h3>Дом. завдань</h3><div class="value">{{ hw }}</div></div>
+      </div>
 
-        {% if day.lessons %}
-        <table class="table mb-3">
+      <div class="diary-table-block">
+        <table class="diary-table">
           <thead>
             <tr>
-              <th>Час</th>
-              <th>Клас</th>
-              <th>Предмет</th>
-              <th>Дом. завдання</th>
-              <th>Оцінки</th>
-              <th>Відвідуваність</th>
+              <th>Дата</th><th>Час</th><th>Предмет</th>
+              <th>Дом.завдання</th><th>Оцінки</th><th>Відвідуваність</th>
             </tr>
           </thead>
           <tbody>
-            {% for item in day.lessons %}
-            <tr>
-              <td>
-                {{ item.lesson.start_time.strftime('%H:%M') }}–{{
-                item.lesson.end_time.strftime('%H:%M') }}
-              </td>
-              <td>
-                {{ item.lesson.class_.class_number
-                   }}{{ item.lesson.class_.subclass }}
-              </td>
-              <td>{{ item.lesson.subject.title }}</td>
-              <td>
-                {% if item.homework %}{{ item.homework.description }}{% else %}—{%
-                endif %}
-              </td>
-              <td>
-                {% if item.grades %}
-                {% for g in item.grades %}
-                {{ g.grade_value }}{% if not loop.last %}, {% endif %}
-                {% endfor %}
-                {% else %}—{% endif %}
-              </td>
-              <td>
-                {% if item.attendance %}{{ item.attendance.status }}{% else %}—{%
-                endif %}
-              </td>
-            </tr>
+            {% for day, sessions in diary|dictsort %}
+              {% for s in sessions %}
+                <tr>
+                  <td>{{ day.strftime('%d.%m.%Y') }}</td>
+                  <td>{{ s.time }}</td>
+                  <td>{{ s.subject }}</td>
+                  <td>{{ s.homework }}</td>
+                  <td>{{ s.grade }}</td>
+                  <td class="status-{{ s.attendance }}">
+                    {{ {
+                      'present':'Присутній','absent':'Відсутній',
+                      'late':'Запізнився','excused':'Поважна'}[s.attendance] }}
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6" style="text-align:center;color:#666;padding:2em;">
+                  Немає уроків
+                </td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
-        {% else %}
-        <p>На цей день уроків немає.</p>
-        {% endif %}
-      </section>
-      {% endfor %}
-    </main>
-  </div>
+      </div>
+    </div>
+
+    <div class="diary-right">
+      <div class="calendar-container">
+        <h4>{{ month_name|capitalize }}</h4>
+        <div class="calendar-grid">
+          {% for wd in ['Пн','Вт','Ср','Чт','Пт','Сб','Нд'] %}
+            <div class="calendar-header">{{ wd }}</div>
+          {% endfor %}
+          {% set first_wd = month_dates[0].weekday() %}
+          {% for _ in range(first_wd) %}
+            <div class="calendar-day empty"></div>
+          {% endfor %}
+          {% for d in month_dates %}
+            <div class="calendar-day
+              {% if d in signature_dates_month %}signed
+              {% elif d < today %}unsigned
+              {% endif %}
+              {% if d == today %} today{% endif %}">
+              {{ d.day }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
 </body>
 </html>

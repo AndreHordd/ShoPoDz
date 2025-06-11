@@ -26,3 +26,26 @@ def get_student_by_parent(parent_id: int):
         'last_name': row[2],
         'class_id':  row[3]
     }
+
+def get_student_by_id(student_id):
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT user_id, first_name, last_name, middle_name, class_id, parent_id
+            FROM students
+            WHERE user_id = %s
+            """,
+            (student_id,)
+        )
+        row = cur.fetchone()
+    if not row:
+        return None
+    return {
+        "user_id":    row[0],
+        "first_name": row[1],
+        "last_name":  row[2],
+        "middle_name": row[3],
+        "class_id":   row[4],
+        "parent_id":  row[5]
+    }

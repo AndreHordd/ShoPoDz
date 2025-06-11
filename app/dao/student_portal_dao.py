@@ -111,7 +111,9 @@ class StudentPortalDAO:
         cur = conn.cursor()
         cur.execute(
             """
-            SELECT l.lesson_id, l.day, l.start_time, l.end_time,
+            SELECT l.lesson_id, l.day, 
+                   TO_CHAR(l.start_time, 'HH24:MI') as start_time, 
+                   TO_CHAR(l.end_time, 'HH24:MI') as end_time,
                    s.title, r.room_number,
                    t.last_name || ' ' || t.first_name
             FROM lessons l
@@ -130,8 +132,8 @@ class StudentPortalDAO:
             {
                 "lesson_id": r[0],
                 "day":       r[1],
-                "start":     str(r[2]),
-                "end":       str(r[3]),
+                "start_time": r[2],
+                "end_time":   r[3],
                 "subject":   r[4],
                 "room":      r[5],
                 "teacher":   r[6],
@@ -149,7 +151,7 @@ class StudentPortalDAO:
                    s.title,
                    a.status,
                    a.comment,
-                   l.day,
+                   ls.session_date,
                    l.start_time
             FROM attendance a
             -- приєднуємо спочатку сесію уроку
@@ -157,7 +159,7 @@ class StudentPortalDAO:
             JOIN lessons        l  ON l.lesson_id   = ls.lesson_id
             JOIN subjects       s  ON s.subject_id  = l.subject_id
             WHERE a.student_id = %s
-            ORDER BY l.day DESC, l.start_time DESC
+            ORDER BY ls.session_date DESC, l.start_time DESC
             """,
             (student_id,),
         )
@@ -169,7 +171,7 @@ class StudentPortalDAO:
                 "subject": r[1],
                 "status": r[2],
                 "comment": r[3],
-                "day": r[4],
+                "day": r[4].isoformat(),
                 "start": str(r[5]),
             }
             for r in rows
@@ -258,3 +260,128 @@ class StudentPortalDAO:
         ]
         cur.close()
         return data
+
+    @staticmethod
+    def profile(student_id: int):
+        conn = get_db()
+        cur = conn.cursor()
+        
+        # Основная информация о студенте
+        cur.execute(
+            """
+            SELECT s.user_id, s.first_name, s.last_name, s.email,
+                   c.class_number, c.subclass,
+                   c.class_number || c.subclass AS class_name
+            FROM students s
+            JOIN classes c ON c.class_id = s.class_id
+            WHERE s.user_id = %s
+            """,
+            (student_id,),
+        )
+        student_row = cur.fetchone()
+        
+        if not student_row:
+            cur.close()
+            return None
+            
+        # Статистика по домашним заданиям
+        cur.execute(
+            """
+            SELECT 
+                COUNT(*) AS total_homework,
+                COUNT(hs.homework_id) AS completed_homework
+            FROM homework h
+            JOIN lesson_sessions ls ON ls.session_id = h.session_id
+            JOIN lessons l ON l.lesson_id = ls.lesson_id
+            LEFT JOIN homework_submissions hs ON hs.homework_id = h.homework_id AND hs.student_id = %s
+            WHERE l.class_id = (SELECT class_id FROM students WHERE user_id = %s)
+            """,
+            (student_id, student_id),
+        )
+        homework_stats = cur.fetchone()
+        
+        # Статистика по посещаемости
+        cur.execute(
+            """
+            SELECT 
+                COUNT(*) AS total_lessons,
+                COUNT(CASE WHEN a.status = 'present' THEN 1 END) AS present_count,
+                COUNT(CASE WHEN a.status = 'absent' THEN 1 END) AS absent_count,
+                COUNT(CASE WHEN a.status = 'late' THEN 1 END) AS late_count,
+                COUNT(CASE WHEN a.status = 'excused' THEN 1 END) AS excused_count
+            FROM attendance a
+            JOIN lesson_sessions ls ON ls.session_id = a.session_id
+            WHERE a.student_id = %s
+            """,
+            (student_id,),
+        )
+        attendance_stats = cur.fetchone()
+        
+        # Средний балл
+        cur.execute(
+            """
+            SELECT AVG(CAST(g.grade_value AS DECIMAL)) AS avg_grade
+            FROM grades g
+            JOIN lesson_sessions ls ON ls.session_id = g.session_id
+            JOIN lessons l ON l.lesson_id = ls.lesson_id
+            WHERE g.student_id = %s AND g.grade_value IS NOT NULL
+            """,
+            (student_id,),
+        )
+        grade_stats = cur.fetchone()
+        
+        # Количество одноклассников
+        cur.execute(
+            """
+            SELECT COUNT(*) - 1 AS classmates_count
+            FROM students
+            WHERE class_id = (SELECT class_id FROM students WHERE user_id = %s)
+            """,
+            (student_id,),
+        )
+        classmates_count = cur.fetchone()
+        
+        cur.close()
+        
+        # Формируем результат с безопасной обработкой None значений
+        homework_total = homework_stats[0] if homework_stats else 0
+        homework_completed = homework_stats[1] if homework_stats else 0
+        homework_rate = round((homework_completed / homework_total * 100) if homework_total > 0 else 0, 1)
+        
+        attendance_total = attendance_stats[0] if attendance_stats else 0
+        attendance_present = attendance_stats[1] if attendance_stats else 0
+        attendance_absent = attendance_stats[2] if attendance_stats else 0
+        attendance_late = attendance_stats[3] if attendance_stats else 0
+        attendance_excused = attendance_stats[4] if attendance_stats else 0
+        attendance_rate = round((attendance_present / attendance_total * 100) if attendance_total > 0 else 0, 1)
+        
+        avg_grade = None
+        if grade_stats and grade_stats[0] is not None:
+            avg_grade = round(float(grade_stats[0]), 2)
+        
+        profile_data = {
+            "student_id": student_row[0],
+            "first_name": student_row[1],
+            "last_name": student_row[2],
+            "email": student_row[3] or "Не вказано",
+            "class_number": student_row[4],
+            "subclass": student_row[5] or "",
+            "class_name": student_row[6],
+            "classmates_count": classmates_count[0] if classmates_count else 0,
+            "homework_stats": {
+                "total": homework_total,
+                "completed": homework_completed,
+                "completion_rate": homework_rate
+            },
+            "attendance_stats": {
+                "total": attendance_total,
+                "present": attendance_present,
+                "absent": attendance_absent,
+                "late": attendance_late,
+                "excused": attendance_excused,
+                "attendance_rate": attendance_rate
+            },
+            "average_grade": avg_grade
+        }
+        
+        return profile_data

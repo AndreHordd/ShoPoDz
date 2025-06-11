@@ -18,6 +18,16 @@ def dashboard():
 
 
 # ---------- API ----------
+@student_portal_bp.route("/api/profile")
+def profile_api():
+    if not _only_student():
+        return jsonify(error="forbidden"), 403
+    profile_data = StudentPortalDAO.profile(session["user_id"])
+    if not profile_data:
+        return jsonify(error="student not found"), 404
+    return jsonify(profile_data)
+
+
 @student_portal_bp.route("/api/schedule")
 def schedule_api():
     if not _only_student():

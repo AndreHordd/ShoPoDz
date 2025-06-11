@@ -10,6 +10,7 @@
         <h2>Авторизація</h2>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% for category, message in messages %}
+            <div id="welcome-toast" class="welcome-toast">{{ msg }}</div>
             <div class="alert alert-{{ category }}">{{ message }}</div>
           {% endfor %}
         {% endwith %}
@@ -21,5 +22,16 @@
             <button type="submit">Увійти</button>
         </form>
     </div>
+<!-- Ось сюди, перед закриваючим </body>, встав цей JS -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toast = document.getElementById('welcome-toast');
+      if (!toast) return;
+      // Після 3.6s (тривалість анімацій) видаляємо елемент
+      setTimeout(() => {
+        toast.remove();
+      }, 3600);
+    });
+  </script>
 </body>
 </html>

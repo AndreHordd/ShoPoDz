@@ -11,7 +11,6 @@ class Subject(db.Model):
     last_teaching_grade   = db.Column(db.SmallInteger, nullable=False)
 
 
-
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -59,6 +58,7 @@ class Attendance(db.Model):
     session = db.relationship('LessonSession', backref='attendances')
     student = db.relationship('Student', backref='attendances')
 
+
 class ParentSignature(db.Model):
     """
     Прив’язка SQLAlchemy до вже створеної таблиці signatures.
@@ -78,7 +78,8 @@ class ParentSignature(db.Model):
                              nullable=False,
                              default=datetime.utcnow)
 
-    # унікальність по всьому timestamp залишаємо — дубль малоймовірний
+
+
 
 
 class Message(db.Model):
@@ -100,6 +101,7 @@ class Parent(db.Model):
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     # (інші потрібні поля)
+    signatures = db.relationship('ParentSignature', backref='parent', lazy=True)
 
 class Teacher(db.Model):
     __tablename__ = 'teachers'
@@ -134,6 +136,8 @@ class Student(db.Model):
     last_name   = db.Column(db.String(100), nullable=False)
     class_id    = db.Column(db.Integer, db.ForeignKey('classes.class_id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('parents.user_id'))
+    signatures = db.relationship('ParentSignature', backref='student', lazy=True)
+
 
 class Class(db.Model):
     __tablename__ = 'classes'

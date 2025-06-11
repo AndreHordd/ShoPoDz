@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Оберіть профіль дитини</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #f7f8fa;
+      font-family: 'Montserrat', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    h2 {
+      text-align: center;
+      font-size: 2.1rem;
+      margin: 30px 0 45px 0;
+      letter-spacing: 0.5px;
+      color: #22295b;
+      font-weight: 700;
+    }
+    .choose-cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2.5rem;
+      margin-bottom: 50px;
+    }
+    .choose-child-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 22px #4b4a6b15;
+      padding: 32px 38px 24px 38px;
+      min-width: 260px;
+      text-align: left;
+      transition: box-shadow 0.18s, transform 0.16s;
+      cursor: pointer;
+      border: 2px solid #f6f7fd;
+      position: relative;
+      overflow: hidden;
+    }
+    .choose-child-card:hover {
+      box-shadow: 0 6px 38px #2148ad22;
+      border: 2px solid #3e63e0;
+      transform: translateY(-5px) scale(1.04);
+    }
+    .choose-child-card a {
+      color: #29277a;
+      text-decoration: none;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      transition: color 0.15s;
+      text-shadow: 0 1px 0 #f2f6ff;
+      border-bottom: 2px solid #b7cafc33;
+      padding-bottom: 2px;
+      display: inline-block;
+    }
+    .choose-child-card:hover a {
+      color: #1d40ad;
+      border-color: #6998ff;
+      text-shadow: 0 2px 12px #aacbff44;
+    }
+    .choose-child-card .grade {
+      font-size: 1.03rem;
+      color: #3a435b;
+      margin-top: 10px;
+      opacity: 0.7;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h2>Оберіть профіль дитини</h2>
+  <div class="choose-cards">
+    {% for child in children %}
+      <div class="choose-child-card">
+        <a href="{{ url_for('parent.select_child', student_id=child.user_id) }}">{{ child.first_name }} {{ child.last_name }}</a>
+        <div class="grade">Клас: {{ child.class_id }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
