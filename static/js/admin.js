@@ -662,7 +662,7 @@ function showUserManagement() {
             <h3><a href="#" onclick="toggleParentList()">👨‍👩‍👧‍👦 Батьки</a></h3>
             <div id="parent-list"></div>
 
-            <h3><a href="#" onclick="toggleTeacherList()">📚 Викладачі</a></h3>
+            <h3><a href="#" onclick="toggleTeacherList()">📚 Вчителі</a></h3>
             <div id="teacher-list"></div>
         </section>
     `;
@@ -962,7 +962,7 @@ function submitAddUser() {
         const subjects = Array.from(document.getElementById('teacher-subjects').selectedOptions).map(opt => +opt.value);
 
         if (!salary || !birth || !hire || subjects.length === 0) {
-            alert("❗ Заповніть усі поля для викладача");
+            alert("❗ Заповніть усі поля для вчителя");
             return;
         }
 
@@ -1014,7 +1014,7 @@ function showEditUserForm(type, id) {
 
             content.innerHTML = `
                 <div class="form-card">
-                    <h2>✏️ Редагувати викладача</h2>
+                    <h2>✏️ Редагувати вчителя</h2>
                     <label>📛 Прізвище: <input id="edit-lastname" value="${t.last_name}"></label>
                     <label>📛 Ім'я: <input id="edit-firstname" value="${t.first_name}"></label>
                     <label>📛 По батькові: <input id="edit-middlename" value="${t.middle_name || ''}"></label>
@@ -1095,7 +1095,7 @@ function submitEditUser(type, id) {
         body.subject_ids = Array.from(document.getElementById('teacher-subjects').selectedOptions).map(opt => +opt.value);
 
         if (!body.salary || !body.birth_date || !body.hire_date || body.subject_ids.length === 0) {
-            alert("❗ Заповніть усі поля викладача");
+            alert("❗ Заповніть усі поля вчителя");
             return;
         }
     }
