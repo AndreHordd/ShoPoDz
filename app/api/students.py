@@ -102,13 +102,17 @@ def add_student():
 @student_bp.route('/api/students/<int:user_id>', methods=['PUT'])
 def update_student(user_id):
     data = request.get_json()
-    first_name = data.get('first_name')
-    last_name = data.get('last_name')
-    middle_name = data.get('middle_name') or ''
+    first = data.get('first_name')
+    last = data.get('last_name')
+    middle = data.get('middle_name') or ''
     class_id = data.get('class_id')
     parent_phone = data.get('parent_phone')
 
-    email = f"s{user_id}.{first_name.lower()}_{last_name.lower()}@school.com"
+    first_lat = transliterate(first.lower())
+    last_lat = transliterate(last.lower())
+    email = f"s{user_id}.{first_lat}_{last_lat}@school.com"
+    password = f"s{user_id}.{first_lat[0]}{last_lat[0]}"
+    hashed_pw = hash_password(password)
 
     conn = get_db()
     cur = conn.cursor()
@@ -123,16 +127,14 @@ def update_student(user_id):
         else:
             return jsonify({"success": False, "error": "❗ Номер телефону не знайдено в базі"}), 400
 
-    # 🔹 Оновити email у users
-    cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
+    cur.execute("UPDATE users SET email = %s, password_hash = %s WHERE user_id = %s", (email, hashed_pw, user_id))
 
-    # 🔹 Оновити студента
     cur.execute("""
         UPDATE students
         SET first_name = %s, last_name = %s, middle_name = %s,
             class_id = %s, parent_id = %s
         WHERE user_id = %s
-    """, (first_name, last_name, middle_name, class_id, parent_id, user_id))
+    """, (first, last, middle, class_id, parent_id, user_id))
 
     conn.commit()
     cur.close()

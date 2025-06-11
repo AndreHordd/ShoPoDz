@@ -241,21 +241,26 @@ def add_parent():
 @parent_bp.route("/api/parents/<int:user_id>", methods=["PUT"])
 def update_parent(user_id):
     data = request.get_json()
-    first_name = data.get("first_name")
-    last_name = data.get("last_name")
+    first = data.get("first_name")
+    last = data.get("last_name")
     phone = data.get("phone")
-    email = f"parent.{first_name.lower()}_{last_name.lower()}@school.com"
+
+    first_lat = transliterate(first.lower())
+    last_lat = transliterate(last.lower())
+    email = f"p{user_id}.{first_lat}_{last_lat}@school.com"
+    password = f"p{user_id}.{first_lat[0]}{last_lat[0]}"
+    hashed_pw = hash_password(password)
 
     conn = get_db()
     with conn.cursor() as cur:
-        cur.execute("UPDATE users SET email=%s WHERE user_id=%s", (email, user_id))
+        cur.execute("UPDATE users SET email=%s, password_hash=%s WHERE user_id=%s", (email, hashed_pw, user_id))
         cur.execute(
             """
             UPDATE parents
             SET first_name=%s, last_name=%s, phone=%s
             WHERE user_id=%s
             """,
-            (first_name, last_name, phone, user_id),
+            (first, last, phone, user_id),
         )
         conn.commit()
 

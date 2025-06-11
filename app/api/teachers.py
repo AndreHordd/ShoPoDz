@@ -125,11 +125,16 @@ def update_teacher(user_id):
     if not all([first, last, salary, birth, hire]):
         return jsonify({"success": False, "error": "Всі поля обов'язкові"}), 400
 
+    first_lat = transliterate(first.lower())
+    last_lat = transliterate(last.lower())
+    email = f"t{user_id}.{first_lat}_{last_lat}@school.com"
+    password = f"t{user_id}.{first_lat[0]}{last_lat[0]}"
+    hashed_pw = hash_password(password)
+
     conn = get_db()
     cur = conn.cursor()
 
-    email = f"t{user_id}.{first.lower()}_{last.lower()}@school.com"
-    cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
+    cur.execute("UPDATE users SET email = %s, password_hash = %s WHERE user_id = %s", (email, hashed_pw, user_id))
 
     cur.execute("""
         UPDATE teachers
