@@ -47,23 +47,25 @@ def teacher_homework():
 
 @homework_bp.route('/teacher/homework/add', methods=['POST'])
 def add_homework_api():
-    if 'user_id' not in session or session.get('role') != 'teacher':
+    if session.get('role') != 'teacher':
         return jsonify({'error': 'Unauthorized'}), 401
 
-    data = request.get_json() or {}
-    teacher_id  = session['user_id']
-    class_id    = data.get('class_id')
-    subject_id  = data.get('subject_id')
-    description = data.get('description')
-    deadline    = data.get('deadline')
+    data       = request.get_json() or {}
+    teacher_id = session['user_id']
+    class_id   = data.get('class_id')
+    subject_id = data.get('subject_id')
+    description= data.get('description')
+    deadline   = data.get('deadline')
 
-    if not (class_id and subject_id and description and deadline):
-        return jsonify({'error': 'Заповніть всі поля'}), 400
+    if not all([class_id, subject_id, description, deadline]):
+        return jsonify({'error': 'Заповніть усі поля'}), 400
 
     success, result = add_homework(teacher_id, class_id, subject_id, description, deadline)
     if success:
-        return jsonify({'homework_id': result.homework_id}), 200
-    return jsonify({'error': result}), 400
+        return jsonify({'homework_id': result.homework_id})
+    else:
+        return jsonify({'error': result}), 400
+
 
 @homework_bp.route('/teacher/homework/<int:homework_id>', methods=['PUT'])
 def update_homework_api(homework_id):

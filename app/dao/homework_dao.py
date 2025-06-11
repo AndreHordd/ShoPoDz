@@ -47,17 +47,14 @@ def get_teacher_homework_week(teacher_id, week_start):
 
 
 def add_homework(teacher_id, class_id, subject_id, description, deadline):
-    """
-    Додає або оновлює домашнє завдання для конкретної сесії уроку (LessonSession).
-    Якщо сесія для цієї дати і уроку не існує — повертає помилку.
-    """
+    # 1. Парсимо дату
     if isinstance(deadline, str):
         try:
             deadline = datetime.fromisoformat(deadline)
         except ValueError:
             return False, "Невірний формат дати дедлайну"
 
-    # Знаходимо Lesson саме для дня дедлайну
+    # 2. Шукаємо урок по class_id, subject_id і дню тижня
     lesson = (
         Lesson.query
         .filter_by(
@@ -71,32 +68,32 @@ def add_homework(teacher_id, class_id, subject_id, description, deadline):
     if not lesson:
         return False, "У цей день у вас немає цього уроку"
 
-    # Забороняємо дедлайн у минулому
+    # 3. Перевірка дедлайну в минулому
     if deadline.date() < date.today():
         return False, "Неможливо задати дедлайн у минулому"
 
-    # Шукаємо сесію уроку на цю дату
+    # 4. Знайти або створити LessonSession
     session = LessonSession.query.filter_by(
         lesson_id=lesson.lesson_id,
         session_date=deadline.date()
     ).first()
     if not session:
-        return False, "У цей день у вас немає цього уроку (немає сесії)"
-
-    # Перевіряємо, чи вже є Homework для цієї сесії
-    existing = Homework.query.filter_by(session_id=session.session_id).first()
-    if existing:
-        existing.description = description
-        existing.deadline = deadline
+        # якщо хочемо створювати сесію автоматично:
+        session = LessonSession(lesson_id=lesson.lesson_id, session_date=deadline.date())
+        db.session.add(session)
         db.session.commit()
-        return True, existing
 
-    hw = Homework(
-        session_id=session.session_id,
-        description=description,
-        deadline=deadline
-    )
-    db.session.add(hw)
+    # 5. Додаємо або апдейтимо Homework
+    hw = Homework.query.filter_by(session_id=session.session_id).first()
+    if hw:
+        hw.description = description
+        hw.deadline    = deadline
+    else:
+        hw = Homework(session_id=session.session_id,
+                      description=description,
+                      deadline=deadline)
+        db.session.add(hw)
+
     db.session.commit()
     return True, hw
 

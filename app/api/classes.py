@@ -9,10 +9,11 @@ def api_get_classes():
     classes = fetch_all_classes()
     return jsonify([
         {
-            "id": c.class_id,
-            "name": f"{c.class_number}-{c.subclass}",
-            "class_number": c.class_number,
-            "subclass": c.subclass  # 🔸 додай це поле
+            "id": c["class_id"],
+            "name": f"{c['class_number']}-{c['subclass']}",
+            "class_number": c["class_number"],
+            "subclass": c["subclass"],
+            "class_teacher_id": c["class_teacher_id"]  # 🔹 Тепер є
         } for c in classes
     ])
 

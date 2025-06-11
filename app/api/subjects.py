@@ -17,3 +17,76 @@ def get_subjects_for_class(class_number):
     cur.close()
 
     return jsonify([{"id": row[0], "title": row[1]} for row in rows])
+
+# 🔹 Отримати всі предмети
+@subject_bp.route("/api/subjects", methods=["GET"])
+def get_subjects():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT subject_id, title, first_teaching_grade, last_teaching_grade FROM subjects ORDER BY title")
+    rows = cur.fetchall()
+    cur.close()
+    return jsonify([
+        {
+            "subject_id": r[0],
+            "title": r[1],
+            "first_teaching_grade": r[2],
+            "last_teaching_grade": r[3],
+        } for r in rows
+    ])
+
+
+# 🔹 Додати новий предмет
+@subject_bp.route("/api/subjects", methods=["POST"])
+def add_subject():
+    data = request.get_json()
+    title = data.get("title")
+    first = data.get("first_teaching_grade")
+    last = data.get("last_teaching_grade")
+
+    if not all([title, first, last]):
+        return jsonify({"success": False, "error": "Усі поля обов'язкові"}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO subjects (title, first_teaching_grade, last_teaching_grade)
+        VALUES (%s, %s, %s)
+    """, (title, first, last))
+    conn.commit()
+    cur.close()
+    return jsonify({"success": True})
+
+
+# 🔹 Оновити предмет
+@subject_bp.route("/api/subjects/<int:subject_id>", methods=["PUT"])
+def update_subject(subject_id):
+    data = request.get_json()
+    title = data.get("title")
+    first = data.get("first_teaching_grade")
+    last = data.get("last_teaching_grade")
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE subjects
+        SET title = %s,
+            first_teaching_grade = %s,
+            last_teaching_grade = %s
+        WHERE subject_id = %s
+    """, (title, first, last, subject_id))
+    conn.commit()
+    cur.close()
+    return jsonify({"success": True})
+
+
+# 🔹 Видалити предмет
+@subject_bp.route("/api/subjects/<int:subject_id>", methods=["DELETE"])
+def delete_subject(subject_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM subjects WHERE subject_id = %s", (subject_id,))
+    conn.commit()
+    cur.close()
+    return jsonify({"success": True})
+
