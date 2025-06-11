@@ -22,10 +22,13 @@ def get_students():
         SELECT s.user_id, s.first_name, s.last_name, s.middle_name,
                s.class_id, s.parent_id,
                CONCAT(c.class_number, '-', c.subclass) AS class_name,
-               c.subclass
+               c.subclass,
+               p.phone AS parent_phone
         FROM students s
+        LEFT JOIN parents p ON s.parent_id = p.user_id
         JOIN classes c ON s.class_id = c.class_id
     """)
+
     rows = cur.fetchall()
     cur.close()
     return jsonify([
@@ -36,8 +39,9 @@ def get_students():
             "middle_name": r[3],
             "class_id": r[4],
             "parent_id": r[5],
-            "class": r[6],         # Назва класу (наприклад, 10-А)
-            "subclass": r[7]       # Окремо літера класу (наприклад, А)
+            "class": r[6],               # Назва класу (наприклад, 10-А)
+            "subclass": r[7],            # Окремо літера класу (наприклад, А)
+            "parent_phone": r[8] or "",  # Номер телефону батьків (якщо є)
         } for r in rows
     ])
 
@@ -48,30 +52,43 @@ def add_student():
     last_name = data.get('last_name')
     middle_name = data.get('middle_name') or ''
     class_id = data.get('class_id')
+    parent_phone = data.get('parent_phone')
 
-    if not first_name or not last_name or not class_id:
+    if not all([first_name, last_name, class_id, parent_phone]):
         return jsonify({'success': False, 'error': 'Missing required fields'}), 400
 
     conn = get_db()
     cur = conn.cursor()
 
-    # 1. Додаємо користувача до таблиці users
+    # 🔍 Знайти parent_id за телефоном
+    cur.execute("SELECT user_id FROM parents WHERE phone = %s", (parent_phone,))
+    parent_row = cur.fetchone()
+    if not parent_row:
+        return jsonify({'success': False, 'error': '❗ Номер телефону не знайдено в базі'}), 404
+    parent_id = parent_row[0]
+
+    # 🔑 Спочатку створити користувача з тимчасовим email
     cur.execute("""
         INSERT INTO users (email, password_hash, role)
         VALUES (%s, %s, 'student')
         RETURNING user_id
-    """, (f"student.{first_name.lower()}_{last_name.lower()}@school.com", 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'))  # або замініть логікою генерації
+    """, ("temp@student.com", 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'))
     user_id = cur.fetchone()[0]
 
-    # 2. Додаємо запис у students
+    # ✉️ Сформувати унікальний email на основі user_id
+    email = f"s{user_id}.{first_name.lower()}_{last_name.lower()}@school.com"
+
+    # 🔁 Оновити email у таблиці users
+    cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
+
+    # 💾 Додати до students
     cur.execute("""
-        INSERT INTO students (user_id, first_name, last_name, middle_name, class_id)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (user_id, first_name, last_name, middle_name, class_id))
+        INSERT INTO students (user_id, first_name, last_name, middle_name, class_id, parent_id)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (user_id, first_name, last_name, middle_name, class_id, parent_id))
 
     conn.commit()
     cur.close()
-
     return jsonify({'success': True})
 
 @student_bp.route('/api/students/<int:user_id>', methods=['PUT'])
@@ -81,20 +98,31 @@ def update_student(user_id):
     last_name = data.get('last_name')
     middle_name = data.get('middle_name') or ''
     class_id = data.get('class_id')
-    parent_id = data.get('parent_id')
+    parent_phone = data.get('parent_phone')
 
-    email = f"student.{first_name.lower()}_{last_name.lower()}@school.com"
+    email = f"s{user_id}.{first_name.lower()}_{last_name.lower()}@school.com"
 
     conn = get_db()
     cur = conn.cursor()
 
-    # Оновити таблицю users
+    # 🔹 Знайти parent_id за номером
+    parent_id = None
+    if parent_phone:
+        cur.execute("SELECT user_id FROM parents WHERE phone = %s", (parent_phone,))
+        result = cur.fetchone()
+        if result:
+            parent_id = result[0]
+        else:
+            return jsonify({"success": False, "error": "❗ Номер телефону не знайдено в базі"}), 400
+
+    # 🔹 Оновити email у users
     cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
 
-    # Оновити таблицю students
+    # 🔹 Оновити студента
     cur.execute("""
         UPDATE students
-        SET first_name = %s, last_name = %s, middle_name = %s, class_id = %s, parent_id = %s
+        SET first_name = %s, last_name = %s, middle_name = %s,
+            class_id = %s, parent_id = %s
         WHERE user_id = %s
     """, (first_name, last_name, middle_name, class_id, parent_id, user_id))
 
@@ -109,10 +137,12 @@ def get_single_student(user_id):
     cur.execute("""
         SELECT s.user_id, s.first_name, s.last_name, s.middle_name,
                s.class_id, s.parent_id, u.email,
-               CONCAT(c.class_number, '-', c.subclass) AS class_name
+               CONCAT(c.class_number, '-', c.subclass) AS class_name,
+               p.phone
         FROM students s
         JOIN users u ON s.user_id = u.user_id
         JOIN classes c ON s.class_id = c.class_id
+        LEFT JOIN parents p ON s.parent_id = p.user_id
         WHERE s.user_id = %s
     """, (user_id,))
     row = cur.fetchone()
@@ -126,7 +156,8 @@ def get_single_student(user_id):
             "class_id": row[4],
             "parent_id": row[5],
             "email": row[6],
-            "class": row[7]  # назва класу для виводу
+            "class": row[7],
+            "parent_phone": row[8] or ""
         })
     else:
         return jsonify({"error": "Student not found"}), 404

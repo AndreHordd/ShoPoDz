@@ -93,23 +93,25 @@ def add_parent():
 
     conn = get_db()
     with conn.cursor() as cur:
-        # Створюємо користувача
+        # 🔍 Перевірка на унікальність номера
+        cur.execute("SELECT 1 FROM parents WHERE phone = %s", (phone,))
+        if cur.fetchone():
+            return jsonify({"success": False, "error": "❗ Цей номер телефону вже зареєстрований"}), 400
+
+        # ⏳ Створення з тимчасовим email
         cur.execute(
             """
             INSERT INTO users (email, password_hash, role)
             VALUES (%s, %s, %s)
             RETURNING user_id
             """,
-            (
-                f"parent.{first_name.lower()}_{last_name.lower()}@school.com",
-                # sha-256 від "password"
-                "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
-                "parent",
-            ),
+            ("temp@school.com", "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f", "parent"),
         )
         user_id = cur.fetchone()[0]
 
-        # Додаємо в таблицю parents
+        email = f"p{user_id}.{first_name.lower()}_{last_name.lower()}@school.com"
+        cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
+
         cur.execute(
             """
             INSERT INTO parents (user_id, first_name, last_name, phone)
@@ -128,23 +130,26 @@ def update_parent(user_id):
     first_name = data.get("first_name")
     last_name = data.get("last_name")
     phone = data.get("phone")
-    email = f"parent.{first_name.lower()}_{last_name.lower()}@school.com"
 
     conn = get_db()
     with conn.cursor() as cur:
+        # 🔍 Перевірити, чи телефон уже є в когось іншого
+        cur.execute("SELECT user_id FROM parents WHERE phone = %s", (phone,))
+        row = cur.fetchone()
+        if row and row[0] != user_id:
+            return jsonify({"success": False, "error": "❗ Цей номер вже використовується іншим користувачем"}), 400
+
+        email = f"p{user_id}.{first_name.lower()}_{last_name.lower()}@school.com"
         cur.execute("UPDATE users SET email=%s WHERE user_id=%s", (email, user_id))
-        cur.execute(
-            """
+        cur.execute("""
             UPDATE parents
             SET first_name=%s, last_name=%s, phone=%s
             WHERE user_id=%s
-            """,
-            (first_name, last_name, phone, user_id),
-        )
+        """, (first_name, last_name, phone, user_id))
+
         conn.commit()
 
     return jsonify({"success": True})
-
 
 @parent_bp.route("/api/parents/<int:user_id>", methods=["GET"])
 def get_single_parent(user_id):

@@ -5,8 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector('a[href="#classes"]').addEventListener('click', showClassManagement);
     document.querySelector('a[href="#announcements"]').addEventListener('click', showAnnouncements);
     document.querySelector('a[href="#users"]').addEventListener('click', showUserManagement);
+    document.querySelector('a[href="#subjects"]').addEventListener('click', showSubjects);
+    document.querySelector('a[href="#print"]').addEventListener('click', showScheduleReport);
 });
-
 
 function showClassSelector() {
     const content = document.getElementById('main-content');
@@ -124,11 +125,22 @@ function createSchedule(classId, className, classNumber, isEdit = false, existin
 
     Promise.all([
         fetch(`/api/subjects/for-class/${classNumber}`).then(res => res.json()),
-        fetch(`/teacher/api/teachers`).then(res => res.json()),
+        fetch(`/api/teachers`).then(res => res.json()),
         fetch(`/api/rooms`).then(res => res.json()),
         fetch(`/api/lessons/full/${classId}`).then(res => res.json())
     ])
     .then(([subjects, teachers, rooms, fullLessons]) => {
+        const subjectMap = {};
+        subjects.forEach(s => subjectMap[s.id] = s.title);
+
+        const teacherMap = {};
+        teachers.forEach(t => {
+            teacherMap[t.user_id] = {
+                name: `${t.last_name} ${t.first_name} ${t.middle_name || ''}`,
+                subject_ids: t.subject_ids
+            };
+        });
+
         let formHTML = `
             <section class="dashboard-section">
                 <h2>${isEdit ? 'Редагування' : 'Створення'} розкладу для ${className}</h2>
@@ -141,24 +153,49 @@ function createSchedule(classId, className, classNumber, isEdit = false, existin
             for (let lesson = 1; lesson <= 7; lesson++) {
                 const key = `${i + 1}_${lesson}`;
                 const entry = fullLessons[key] || {};
-                formHTML += `
-                    <label>Урок ${lesson}:
-                        <select name="day_${i}_lesson_${lesson}">
-                            <option value="">—</option>
-                            ${subjects.map(s => `<option value="${s.id}" ${s.id == entry.subject_id ? 'selected' : ''}>${s.title}</option>`).join('')}
-                        </select>
-                        Вчитель:
-                        <select name="teacher_day_${i}_lesson_${lesson}">
-                            <option value="">—</option>
-                            ${teachers.map(t => `<option value="${t.id}" ${t.id == entry.teacher_id ? 'selected' : ''}>${t.name}</option>`).join('')}
-                        </select>
-                        Кабінет:
-                        <select name="room_day_${i}_lesson_${lesson}">
-                            <option value="">—</option>
-                            ${rooms.map(r => `<option value="${r.id}" ${r.id == entry.room_id ? 'selected' : ''}>${r.number}</option>`).join('')}
-                        </select>
-                    </label><br>
-                `;
+                const selectedSubject = entry.subject_id || "";
+                const selectedTeacher = entry.teacher_id || "";
+                const selectedRoom = entry.room_id || "";
+
+                // предмети: всі (але якщо вибрано викладача — фільтруємо)
+                let subjectOptions = subjects;
+                if (selectedTeacher && teacherMap[selectedTeacher]) {
+                    subjectOptions = subjects.filter(s => teacherMap[selectedTeacher].subject_ids.includes(s.id));
+                }
+
+                const subjectSelect = `
+                    <select name="day_${i}_lesson_${lesson}" class="subject-select fixed-width" data-day="${i}" data-lesson="${lesson}">
+                        <option value="">—</option>
+                        ${subjectOptions.map(s => `
+                            <option value="${s.id}" ${s.id == selectedSubject ? 'selected' : ''}>${s.title}</option>
+                        `).join('')}
+                    </select>`;
+
+                // викладачі: всі (але якщо вибрано предмет — фільтруємо)
+                let teacherOptions = teachers;
+                if (selectedSubject) {
+                    teacherOptions = teachers.filter(t => t.subject_ids.includes(selectedSubject));
+                }
+
+                const teacherSelect = `
+                    <select name="teacher_day_${i}_lesson_${lesson}" class="teacher-select fixed-width" data-day="${i}" data-lesson="${lesson}">
+                        <option value="">—</option>
+                        ${teacherOptions.map(t => `
+                            <option value="${t.user_id}" ${t.user_id == selectedTeacher ? 'selected' : ''}>
+                                ${t.last_name} ${t.first_name} ${t.middle_name || ''}
+                            </option>
+                        `).join('')}
+                    </select>`;
+
+                const roomSelect = `
+                    <select name="room_day_${i}_lesson_${lesson}" class="fixed-width">
+                        <option value="">—</option>
+                        ${rooms.map(r => `
+                            <option value="${r.id}" ${r.id == selectedRoom ? 'selected' : ''}>${r.number}</option>
+                        `).join('')}
+                    </select>`;
+
+                formHTML += `<label>Урок ${lesson}: ${subjectSelect} Вчитель: ${teacherSelect} Кабінет: ${roomSelect}</label><br>`;
             }
             formHTML += `<hr>`;
         });
@@ -166,10 +203,67 @@ function createSchedule(classId, className, classNumber, isEdit = false, existin
         formHTML += `<button type="submit">Зберегти розклад</button></form></section>`;
         content.innerHTML = formHTML;
 
+        // === Динамічне оновлення ===
+        const subjectSelects = document.querySelectorAll('.subject-select');
+        const teacherSelects = document.querySelectorAll('.teacher-select');
+
+        subjectSelects.forEach(subjectSelect => {
+            subjectSelect.addEventListener('change', () => {
+                const day = subjectSelect.dataset.day;
+                const lesson = subjectSelect.dataset.lesson;
+                const teacherSelect = document.querySelector(`.teacher-select[data-day="${day}"][data-lesson="${lesson}"]`);
+                const selectedSubjectId = +subjectSelect.value;
+                const selectedTeacher = teacherSelect.value;
+
+                teacherSelect.innerHTML = '<option value="">—</option>';
+
+                teachers.forEach(t => {
+                    if (!selectedSubjectId || t.subject_ids.includes(selectedSubjectId)) {
+                        const option = document.createElement('option');
+                        option.value = t.user_id;
+                        option.textContent = `${t.last_name} ${t.first_name} ${t.middle_name || ''}`;
+                        if (String(t.user_id) === selectedTeacher) option.selected = true;
+                        teacherSelect.appendChild(option);
+                    }
+                });
+            });
+        });
+
+        teacherSelects.forEach(teacherSelect => {
+            teacherSelect.addEventListener('change', () => {
+                const day = teacherSelect.dataset.day;
+                const lesson = teacherSelect.dataset.lesson;
+                const subjectSelect = document.querySelector(`.subject-select[data-day="${day}"][data-lesson="${lesson}"]`);
+                const selectedTeacherId = +teacherSelect.value;
+                const selectedSubject = subjectSelect.value;
+
+                subjectSelect.innerHTML = '<option value="">—</option>';
+
+                if (teacherMap[selectedTeacherId]) {
+                    teacherMap[selectedTeacherId].subject_ids.forEach(subjId => {
+                        if (subjectMap[subjId]) {
+                            const option = document.createElement('option');
+                            option.value = subjId;
+                            option.textContent = subjectMap[subjId];
+                            if (String(subjId) === selectedSubject) option.selected = true;
+                            subjectSelect.appendChild(option);
+                        }
+                    });
+                } else {
+                    subjects.forEach(s => {
+                        const option = document.createElement('option');
+                        option.value = s.id;
+                        option.textContent = s.title;
+                        if (String(s.id) === selectedSubject) option.selected = true;
+                        subjectSelect.appendChild(option);
+                    });
+                }
+            });
+        });
+
+        // === Надсилання форми ===
         document.getElementById('schedule-form').addEventListener('submit', function (e) {
             e.preventDefault();
-
-            // Перевірка на неповне заповнення
             let hasError = false;
             for (let day = 0; day < 5; day++) {
                 for (let lesson = 1; lesson <= 7; lesson++) {
@@ -187,7 +281,6 @@ function createSchedule(classId, className, classNumber, isEdit = false, existin
             }
             if (hasError) return;
 
-            // Відправка форми
             const formData = new FormData(this);
             fetch('/api/lessons/create', {
                 method: 'POST',
@@ -210,7 +303,6 @@ function createSchedule(classId, className, classNumber, isEdit = false, existin
         alert('❌ Не вдалося завантажити дані: ' + err.message);
     });
 }
-
 
 function deleteSchedule(classId, className, classNumber) {
     const confirmDelete = confirm(`Видалити розклад для ${className}?`);
@@ -262,7 +354,7 @@ function showClassManagement() {
                                 <tr>
                                     <td>${c.name}</td>
                                     <td>
-                                        <button class="btn-small" onclick="showEditClassForm(${c.id}, '${c.name}')">✏️ Редагувати</button>
+                                        <button class="btn-small" onclick="showEditClassForm(${c.id}, '${c.name}', ${c.class_teacher_id})">✏️ Редагувати</button>
                                         <button class="btn-small red" onclick="deleteClass(${c.id})">🗑️ Видалити</button>
                                     </td>
                                 </tr>
@@ -277,14 +369,16 @@ function showClassManagement() {
         });
 }
 
-
 function showAddClassForm() {
     const content = document.getElementById('main-content');
 
-    fetch('/teacher/api/teachers')
+    fetch('/api/teachers')
         .then(res => res.json())
         .then(teachers => {
-            const teacherOptions = teachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            const teacherOptions = teachers.map(t => {
+              const fullName = `${t.last_name} ${t.first_name}${t.middle_name ? ' ' + t.middle_name : ''}`;
+              return `<option value="${t.user_id}">${fullName}</option>`;
+            }).join('');
 
             content.innerHTML = `
                 <section class="dashboard-section">
@@ -303,7 +397,6 @@ function showAddClassForm() {
             `;
         });
 }
-
 
 function addClass() {
     const number = document.getElementById('class-number').value;
@@ -326,16 +419,19 @@ function addClass() {
     }).then(() => showClassManagement());
 }
 
-
-function showEditClassForm(id, currentName) {
+function showEditClassForm(id, currentName, classTeacherId) {
     const [number, subclass] = currentName.split("-");
 
-    fetch('/teacher/api/teachers')
+    fetch('/api/teachers')
         .then(res => res.json())
         .then(teachers => {
             const content = document.getElementById('main-content');
-            let teacherOptions = teachers.map(t =>
-                `<option value="${t.id}">${t.name}</option>`).join('');
+
+            let teacherOptions = teachers.map(t => {
+                const fullName = `${t.last_name} ${t.first_name}${t.middle_name ? ' ' + t.middle_name : ''}`;
+                const selected = String(t.user_id) === String(classTeacherId) ? 'selected' : '';
+                return `<option value="${t.user_id}" ${selected}>${fullName}</option>`;
+            }).join('');
 
             content.innerHTML = `
                 <section class="dashboard-section">
@@ -344,6 +440,7 @@ function showEditClassForm(id, currentName) {
                     <label>Буква: <input id="edit-subclass" value="${subclass}" maxlength="1"></label><br><br>
                     <label>Класний керівник:
                         <select id="edit-class-teacher-id">
+                            <option value="">-- Оберіть вчителя --</option>
                             ${teacherOptions}
                         </select>
                     </label><br><br>
@@ -513,10 +610,15 @@ function showUserManagement() {
         <section class="dashboard-section">
             <h2>Користувачі</h2>
             <button class="btn-primary" onclick="showAddUserForm()">➕ Додати користувача</button>
+
             <h3><a href="#" onclick="showClassList()">Учні</a></h3>
             <div id="student-list"></div>
+
             <h3><a href="#" onclick="loadUserList('parent')">Батьки</a></h3>
             <div id="parent-list"></div>
+
+            <h3><a href="#" onclick="loadUserList('teacher')">Викладачі</a></h3>
+            <div id="teacher-list"></div>
         </section>
     `;
 }
@@ -553,8 +655,8 @@ function showStudentsByClass(classId, className) {
                     ${filtered.map(s => `
                         <li>
                             ${s.last_name} ${s.first_name}${s.middle_name ? ' ' + s.middle_name : ''}
-                            <button onclick="showEditUserForm('student', ${s.user_id})">✏️ Редагувати</button>
-                            <button onclick="deleteUser('student', ${s.user_id})">🗑️ Видалити</button>
+                            <button class = "btn-small" onclick="showEditUserForm('student', ${s.user_id})">✏️ Редагувати</button>
+                            <button class = "btn-small red" onclick="deleteUser('student', ${s.user_id})">🗑️ Видалити</button>
                         </li>
                     `).join('')}
                 </ul>
@@ -563,25 +665,32 @@ function showStudentsByClass(classId, className) {
         });
 }
 
-
 function loadUserList(type) {
-    fetch(`/api/${type}s`)
+    const url = type === 'teacher' ? '/api/teachers' : `/api/${type}s`;
+    fetch(url)
         .then(res => res.json())
         .then(users => {
             const listId = `${type}-list`;
             const listEl = document.getElementById(listId);
             let html = '<ul>';
 
-            users.forEach(u => {
-                const name = `${u.last_name} ${u.first_name}${u.middle_name ? ' ' + u.middle_name : ''}`;
-                const suffix = type === 'student' ? ` (Клас ${u.class})` : '';
-                html += `
-                    <li>${name}${suffix}
-                        <button onclick="showEditUserForm('${type}', ${u.user_id})">✏️ Редагувати</button>
-                        <button onclick="deleteUser('${type}', ${u.user_id})">🗑️ Видалити</button>
+            if (type === 'teacher') {
+                html += users.map(t => `
+                    <li>
+                        ${t.last_name} ${t.first_name}${t.middle_name ? ' ' + t.middle_name : ''}
+                        <button class = "btn-small" onclick="showEditUserForm('teacher', ${t.user_id})">✏️ Редагувати</button>
+                        <button class = "btn-small red" onclick="deleteUser('teacher', ${t.user_id})">🗑️ Видалити</button>
                     </li>
-                `;
-            });
+                `).join('');
+            } else {
+                html += users.map(u => `
+                    <li>
+                        ${u.last_name} ${u.first_name}${u.middle_name ? ' ' + u.middle_name : ''}
+                        <button class = "btn-small" onclick="showEditUserForm('${type}', ${u.user_id})">✏️ Редагувати</button>
+                        <button class = "btn-small red" onclick="deleteUser('${type}', ${u.user_id})">🗑️ Видалити</button>
+                    </li>
+                `).join('');
+            }
 
             html += '</ul>';
             listEl.innerHTML = html;
@@ -590,6 +699,7 @@ function loadUserList(type) {
 
 function showAddUserForm() {
     const content = document.getElementById('main-content');
+
     content.innerHTML = `
         <section class="dashboard-section">
             <h2>Додати користувача</h2>
@@ -597,10 +707,11 @@ function showAddUserForm() {
                 <select id="user-type">
                     <option value="student">Учень</option>
                     <option value="parent">Батько/Мати</option>
+                    <option value="teacher">Викладач</option>
                 </select>
             </label><br>
-            <label>Прізвище: <input id="user-lastname"></label><br>
-            <label>Ім’я: <input id="user-firstname"></label><br>
+            <label>Прізвище: <input id="user-lastname" type="text"></label><br>
+            <label>Ім’я: <input id="user-firstname" type="text"></label><br>
             <div id="extra-fields"></div>
             <button onclick="submitAddUser()">Зберегти</button>
             <button onclick="showUserManagement()">Назад</button>
@@ -616,20 +727,38 @@ function updateExtraFields() {
     const extra = document.getElementById('extra-fields');
 
     if (type === 'student') {
-        fetch('/api/classes')
+        fetch('/api/classes').then(res => res.json()).then(classes => {
+            const classOptions = classes.map(c =>
+                `<option value="${c.id}">${c.class_number}-${c.subclass}</option>`).join('');
+            extra.innerHTML = `
+                <label>По батькові: <input id="student-middlename"></label><br>
+                <label>Клас:
+                    <select id="student-class-id">${classOptions}</select>
+                </label><br>
+                <label>Номер телефону одного з батьків: <input id="student-parent-phone"></label><br>
+            `;
+        });
+    } else if (type === 'parent') {
+        extra.innerHTML = `<label>Телефон: <input id="parent-phone"></label>`;
+    } else if (type === 'teacher') {
+        fetch('/api/subjects')
             .then(res => res.json())
-            .then(classes => {
+            .then(subjects => {
+                const subjectOptions = subjects.map(s =>
+                    `<option value="${s.subject_id}">${s.title}</option>`).join('');
                 extra.innerHTML = `
-                    <label>По батькові: <input id="user-middlename"></label><br>
-                    <label>Клас:
-                        <select id="student-class-id">
-                            ${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
-                        </select>
-                    </label><br>
+                    <label>По батькові: <input id="teacher-middle"></label><br>
+                    <label>Зарплата: <input id="teacher-salary" type="number" step="0.01"></label><br>
+                    <label>Дата народження: <input id="teacher-birth" type="date"></label><br>
+                    <label>Дата прийому: <input id="teacher-hire" type="date"></label><br>
+                    <label>Предмети (утримуйте Ctrl або ⌘ для вибору кількох):</label><br>
+                    <select id="teacher-subjects" multiple size="5" style="width: 300px; max-width: 100%;">
+                        ${subjectOptions}
+                    </select><br><br>
                 `;
             });
     } else {
-        extra.innerHTML = `<label>Телефон: <input id="parent-phone"></label><br>`;
+        extra.innerHTML = '';
     }
 }
 
@@ -639,7 +768,7 @@ function submitAddUser() {
     const firstName = document.getElementById('user-firstname').value.trim();
 
     if (!lastName || !firstName) {
-        alert("❗ Заповніть усі обов'язкові поля");
+        alert("❗ Заповніть ім’я та прізвище");
         return;
     }
 
@@ -649,21 +778,44 @@ function submitAddUser() {
     };
 
     if (type === 'student') {
-        const middleName = document.getElementById('user-middlename').value.trim();
+        const middleName = document.getElementById('student-middlename').value.trim();
         const classId = document.getElementById('student-class-id').value;
-        if (!classId) {
-            alert("❗ Оберіть клас");
+        const parentPhone = document.getElementById('student-parent-phone').value.trim();
+
+        if (!classId || !parentPhone) {
+            alert("❗ Заповніть усі поля для учня");
             return;
         }
+
         body.middle_name = middleName;
         body.class_id = classId;
-    } else {
+        body.parent_phone = parentPhone;
+
+    } else if (type === 'parent') {
         const phone = document.getElementById('parent-phone').value.trim();
         if (!phone) {
             alert("❗ Введіть номер телефону");
             return;
         }
         body.phone = phone;
+
+    } else if (type === 'teacher') {
+        const middle = document.getElementById('teacher-middle').value.trim();
+        const salary = parseFloat(document.getElementById('teacher-salary').value);
+        const birth = document.getElementById('teacher-birth').value;
+        const hire = document.getElementById('teacher-hire').value;
+        const subjects = Array.from(document.getElementById('teacher-subjects').selectedOptions).map(opt => +opt.value);
+
+        if (!salary || !birth || !hire || subjects.length === 0) {
+            alert("❗ Заповніть усі поля для викладача");
+            return;
+        }
+
+        body.middle_name = middle;
+        body.salary = salary;
+        body.birth_date = birth;
+        body.hire_date = hire;
+        body.subject_ids = subjects;
     }
 
     fetch(`/api/${type}s`, {
@@ -678,104 +830,346 @@ function submitAddUser() {
         } else {
             alert("❌ Помилка: " + data.error);
         }
-    });
+    })
+    .catch(err => alert("❌ Серверна помилка: " + err.message));
 }
 
-
 function showEditUserForm(type, id) {
-    fetch(`/api/${type}s/${id}`)
-        .then(res => res.json())
-        .then(user => {
-            const content = document.getElementById('main-content');
-            let extraField = '';
+    if (type === 'teacher') {
+        Promise.all([
+            fetch(`/api/teachers`).then(res => res.json()),
+            fetch(`/api/subjects`).then(res => res.json())
+        ]).then(([teachers, subjects]) => {
+            const t = teachers.find(t => t.user_id === id);
+            if (!t) return alert("Викладача не знайдено");
 
-            if (type === 'student') {
-                // Показуємо випадаючий список класів
-                fetch('/api/classes')
-                    .then(res => res.json())
-                     .then(classes => {
-                        const options = classes.map(c => {
-                            const label = c.subclass ? `${c.class_number}-${c.subclass}` : `${c.class_number}`;
-                            const selected = String(c.id) === String(user.class_id) ? 'selected' : '';
-                            return `<option value="${c.id}" ${selected}>${label}</option>`;
-                        }).join('');
+            const subjectOptions = subjects.map(s => `
+                <option value="${s.subject_id}" ${t.subject_ids.includes(s.subject_id) ? 'selected' : ''}>
+                    ${s.title}
+                </option>`).join('');
 
-                        extraField = `
-                            <label>Клас:
-                                <select id="edit-class-id">
-                                    ${options}
-                                </select>
-                            </label><br>
-                        `;
-
-                        content.innerHTML = `
-                            <section class="dashboard-section">
-                                <h2>Редагувати користувача</h2>
-                                <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
-                                <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
-                                <label>По батькові: <input id="edit-middlename" value="${user.middle_name || ''}"></label><br>
-                                <label>Клас:
-                                    <select id="edit-class-id">${options}</select>
-                                </label><br>
-                                <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
-                                <button onclick="showUserManagement()">Назад</button>
-                            </section>
-                        `;
-                    });
-            } else {
-                // Для батьків
-                extraField = `<label>Телефон: <input id="edit-phone" value="${user.phone}"></label><br>`;
-                content.innerHTML = `
-                    <section class="dashboard-section">
-                        <h2>Редагувати користувача</h2>
-                        <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
-                        <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
-                        ${extraField}
-                        <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
-                        <button onclick="showUserManagement()">Назад</button>
-                    </section>
-                `;
-            }
+            const content = document.getElementById("main-content");
+            content.innerHTML = `
+                <section class="dashboard-section">
+                    <h2>Редагувати викладача</h2>
+                    <label>Прізвище: <input id="edit-lastname" value="${t.last_name}"></label><br>
+                    <label>Ім'я: <input id="edit-firstname" value="${t.first_name}"></label><br>
+                    <label>По батькові: <input id="edit-middlename" value="${t.middle_name || ''}"></label><br>
+                    <label>Зарплата: <input id="teacher-salary" type="number" value="${t.salary}"></label><br>
+                    <label>Дата народження: <input id="teacher-birth" type="date" value="${t.birth_date}"></label><br>
+                    <label>Дата прийому: <input id="teacher-hire" type="date" value="${t.hire_date}"></label><br>
+                    <label>Предмети:</label><br>
+                    <select id="teacher-subjects" multiple size="5" style="width: 300px;">
+                        ${subjectOptions}
+                    </select><br><br>
+                    <button onclick="submitEditUser('teacher', ${id})">Зберегти</button>
+                    <button onclick="showUserManagement()">Назад</button>
+                </section>
+            `;
         });
+    } else {
+        fetch(`/api/${type}s/${id}`)
+            .then(res => res.json())
+            .then(user => {
+                const content = document.getElementById('main-content');
+                let extraField = '';
+
+                if (type === 'student') {
+                    fetch('/api/classes')
+                        .then(res => res.json())
+                        .then(classes => {
+                            const options = classes.map(c => {
+                                const selected = String(c.id) === String(user.class_id) ? 'selected' : '';
+                                return `<option value="${c.id}" ${selected}>${c.class_number}-${c.subclass}</option>`;
+                            }).join('');
+
+                            content.innerHTML = `
+                                <section class="dashboard-section">
+                                    <h2>Редагувати учня</h2>
+                                    <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
+                                    <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
+                                    <label>По батькові: <input id="edit-middlename" value="${user.middle_name || ''}"></label><br>
+                                    <label>Клас: <select id="edit-class-id">${options}</select></label><br>
+                                    <label>Телефон батьків: <input id="edit-parent-phone" value="${user.parent_phone || ''}"></label><br>
+                                    <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
+                                    <button onclick="showUserManagement()">Назад</button>
+                                </section>
+                            `;
+                        });
+                } else {
+                    extraField = `<label>Телефон: <input id="edit-phone" value="${user.phone}"></label><br>`;
+                    content.innerHTML = `
+                        <section class="dashboard-section">
+                            <h2>Редагувати батька/матір</h2>
+                            <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
+                            <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
+                            ${extraField}
+                            <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
+                            <button onclick="showUserManagement()">Назад</button>
+                        </section>
+                    `;
+                }
+            });
+    }
 }
 
 function submitEditUser(type, id) {
-    const lastName = document.getElementById('edit-lastname').value.trim();
-    const firstName = document.getElementById('edit-firstname').value.trim();
-    const middleName = document.getElementById('edit-middlename')?.value.trim() || '';
+    const body = {
+        first_name: document.getElementById('edit-firstname').value.trim(),
+        last_name: document.getElementById('edit-lastname').value.trim(),
+        middle_name: document.getElementById('edit-middlename')?.value.trim() || ''
+    };
 
-    if (!lastName || !firstName || (type === 'student' && !middleName)) {
-        alert("❗ Заповніть усі поля");
+    if (!body.first_name || !body.last_name) {
+        alert("❗ Заповніть обов’язкові поля");
         return;
     }
 
-    const body = {
-        last_name: lastName,
-        first_name: firstName,
-        middle_name: middleName
-    };
-
     if (type === 'student') {
-        const classId = parseInt(document.getElementById('edit-class-id').value);
-        if (isNaN(classId)) {
-            alert("❗ Оберіть клас");
+        body.class_id = document.getElementById('edit-class-id').value;
+        body.parent_phone = document.getElementById('edit-parent-phone').value.trim();
+    } else if (type === 'parent') {
+        body.phone = document.getElementById('edit-phone').value.trim();
+    } else if (type === 'teacher') {
+        body.salary = parseFloat(document.getElementById('teacher-salary').value);
+        body.birth_date = document.getElementById('teacher-birth').value;
+        body.hire_date = document.getElementById('teacher-hire').value;
+        body.subject_ids = Array.from(document.getElementById('teacher-subjects').selectedOptions).map(opt => +opt.value);
+
+        if (!body.salary || !body.birth_date || !body.hire_date || body.subject_ids.length === 0) {
+            alert("❗ Заповніть усі поля викладача");
             return;
         }
-        body.class_id = classId;
-    } else {
-        body.phone = document.getElementById('edit-phone').value.trim();
     }
 
     fetch(`/api/${type}s/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
-    }).then(() => showUserManagement());
+    })
+    .then(res => {
+        if (!res.ok) return res.json().then(data => { throw new Error(data.error || "Помилка оновлення") });
+        return res.json();
+    })
+    .then(() => showUserManagement())
+    .catch(err => alert("❌ " + err.message));
 }
 
 function deleteUser(type, id) {
-    if (confirm("Ви впевнені, що хочете видалити цього користувача?")) {
+    let confirmMessage = "Ви впевнені, що хочете видалити цього користувача?";
+    if (type === 'teacher') confirmMessage = "Ви дійсно хочете видалити викладача?";
+
+    if (confirm(confirmMessage)) {
         fetch(`/api/${type}s/${id}`, { method: 'DELETE' })
-            .then(() => showUserManagement());
+            .then(() => {
+                if (type === 'teacher') {
+                    loadUserList('teacher');
+                } else {
+                    showUserManagement();
+                }
+            })
+            .catch(err => alert("❌ Помилка при видаленні: " + err.message));
     }
+}
+
+function showSubjects() {
+    fetch('/api/subjects')
+        .then(res => res.json())
+        .then(subjects => {
+            const content = document.getElementById("main-content");
+
+            let rows = subjects.map(sub => `
+                <tr>
+                    <td>${sub.title}</td>
+                    <td>${sub.first_teaching_grade}</td>
+                    <td>${sub.last_teaching_grade}</td>
+                    <td>
+                        <button class = "btn-small" onclick="editSubject(${sub.subject_id})">✏️ Редагувати</button>
+                        <button class = "btn-small red" onclick="deleteSubject(${sub.subject_id})">🗑️ Видалити</button>
+                    </td>
+                </tr>
+            `).join("");
+
+            content.innerHTML = `
+                <section class="dashboard-section">
+                  <h2>Предмети</h2>
+                  <div style="margin-bottom: 1rem;">
+                    <button onclick="showAddSubjectForm()" style="background-color: #16558F; color: white; padding: 8px 16px; border-radius: 8px; border: none;">
+                      ➕ Додати предмет
+                    </button>
+                  </div>
+                  <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 8px rgba(0,0,0,0.1);">
+                    <thead style="background-color: #f0f0f0; text-align: left;">
+                      <tr>
+                        <th style="padding: 12px;">Назва</th>
+                        <th style="padding: 12px;">З класу</th>
+                        <th style="padding: 12px;">До класу</th>
+                        <th style="padding: 12px;">Дії</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${subjects.map(sub => `
+                        <tr>
+                          <td style="padding: 12px;">${sub.title}</td>
+                          <td style="padding: 12px;">${sub.first_teaching_grade}</td>
+                          <td style="padding: 12px;">${sub.last_teaching_grade}</td>
+                          <td style="padding: 12px;">
+                            <button class = "btn-small" onclick="editSubject(${sub.subject_id})">
+                              ✏️ Редагувати
+                            </button>
+                            <button class = "btn-small red" onclick="deleteSubject(${sub.subject_id})">
+                              🗑️ Видалити
+                            </button>
+                          </td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                </section>
+                `;
+        });
+}
+
+function showAddSubjectForm() {
+    const content = document.getElementById("main-content");
+    content.innerHTML = `
+        <section class="dashboard-section">
+            <h2>Додати предмет</h2>
+            <label>Назва: <input id="subject-title" type="text"></label><br>
+            <label>З класу: <input id="first-grade" type="number" min="1" max="11"></label><br>
+            <label>До класу: <input id="last-grade" type="number" min="1" max="11"></label><br>
+            <button onclick="submitNewSubject()">Зберегти</button>
+            <button onclick="showSubjects()">Назад</button>
+        </section>
+    `;
+}
+
+function submitNewSubject() {
+    const title = document.getElementById("subject-title").value.trim();
+    const first = document.getElementById("first-grade").value;
+    const last = document.getElementById("last-grade").value;
+
+    if (!title || !first || !last) {
+        alert("❗ Усі поля обов'язкові");
+        return;
+    }
+
+    fetch("/api/subjects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            title: title,
+            first_teaching_grade: parseInt(first),
+            last_teaching_grade: parseInt(last)
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) throw new Error(data.error || "Помилка додавання");
+        showSubjects();
+    })
+    .catch(err => alert(err.message));
+}
+
+function editSubject(subjectId) {
+    fetch(`/api/subjects`)
+        .then(res => res.json())
+        .then(subjects => {
+            const subject = subjects.find(s => s.subject_id === subjectId);
+            if (!subject) return alert("❗ Предмет не знайдено");
+
+            const content = document.getElementById("main-content");
+            content.innerHTML = `
+                <section class="dashboard-section">
+                    <h2>Редагувати предмет</h2>
+                    <label>Назва: <input id="subject-title" type="text" value="${subject.title}"></label><br>
+                    <label>З класу: <input id="first-grade" type="number" value="${subject.first_teaching_grade}" min="1" max="11"></label><br>
+                    <label>До класу: <input id="last-grade" type="number" value="${subject.last_teaching_grade}" min="1" max="11"></label><br>
+                    <button onclick="submitSubjectEdit(${subject.subject_id})">Зберегти</button>
+                    <button onclick="showSubjects()">Назад</button>
+                </section>
+            `;
+        });
+}
+
+function submitSubjectEdit(subjectId) {
+    const title = document.getElementById("subject-title").value.trim();
+    const first = document.getElementById("first-grade").value;
+    const last = document.getElementById("last-grade").value;
+
+    if (!title || !first || !last) {
+        alert("❗ Усі поля обов'язкові");
+        return;
+    }
+
+    fetch(`/api/subjects/${subjectId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            title: title,
+            first_teaching_grade: parseInt(first),
+            last_teaching_grade: parseInt(last)
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) throw new Error(data.error || "Помилка оновлення");
+        showSubjects();
+    })
+    .catch(err => alert(err.message));
+}
+
+function deleteSubject(subjectId) {
+    if (!confirm("Ви дійсно хочете видалити предмет?")) return;
+
+    fetch(`/api/subjects/${subjectId}`, {
+        method: "DELETE"
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) throw new Error("Не вдалося видалити");
+        showSubjects();
+    })
+    .catch(err => alert(err.message));
+}
+
+function showScheduleReport() {
+    const content = document.getElementById('main-content');
+    content.innerHTML = `
+        <section class="dashboard-section">
+            <h2>Звіт по розкладу</h2>
+            <label>Оберіть клас:
+                <select id="report-class-select">
+                    <option disabled selected>-- Виберіть клас --</option>
+                </select>
+            </label>
+            <button id="generate-pdf">📄 PDF</button>
+            <button id="generate-csv">📑 CSV</button>
+        </section>
+    `;
+
+    fetch('/api/classes')
+        .then(res => res.json())
+        .then(classes => {
+            const select = document.getElementById('report-class-select');
+            classes.forEach(cls => {
+                const option = document.createElement('option');
+                option.value = cls.id;
+                option.textContent = cls.name;
+                select.appendChild(option);
+            });
+        });
+
+    document.getElementById('generate-pdf').addEventListener('click', () => generateScheduleReport('pdf'));
+    document.getElementById('generate-csv').addEventListener('click', () => generateScheduleReport('csv'));
+}
+
+function generateScheduleReport(type) {
+    const classId = document.getElementById('report-class-select').value;
+    if (!classId) {
+        alert("❗ Спочатку виберіть клас");
+        return;
+    }
+
+    window.open(`/api/reports/schedule/${classId}?format=${type}`, '_blank');
 }

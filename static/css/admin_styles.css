@@ -232,6 +232,7 @@ button:hover {
     padding: 6px 10px;
     font-size: 14px;
     margin-right: 5px;
+    margin-bottom: 2px;
     border: none;
     border-radius: 4px;
     background-color: #1c9c95;
@@ -240,6 +241,7 @@ button:hover {
 
 .btn-small.red {
     background-color: #d9534f;
+    margin-bottom: 2px;
     color: white;
 }
 .announcement-card {
@@ -317,3 +319,9 @@ button:hover {
 .create-button:hover {
     background-color: #0053b3;
 }
+
+.fixed-width {
+    width: 220px;
+}
+
+
