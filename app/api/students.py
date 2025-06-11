@@ -2,8 +2,13 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 
 from app.models import Student
 from app.utils.db import get_db
+from app.api.transliteration import transliterate
+import hashlib
 
 student_bp = Blueprint('student', __name__)
+
+def hash_password(plain_password):
+    return hashlib.sha256(plain_password.encode()).hexdigest()
 
 @student_bp.route('/student')
 def student_dashboard():
@@ -76,10 +81,13 @@ def add_student():
     user_id = cur.fetchone()[0]
 
     # ✉️ Сформувати унікальний email на основі user_id
-    email = f"s{user_id}.{first_name.lower()}_{last_name.lower()}@school.com"
+    first_latin = transliterate(first_name.lower())
+    last_latin = transliterate(last_name.lower())
+    email = f"s{user_id}.{first_latin}_{last_latin}@school.com"
+    password = f"s{user_id}.{first_latin[0]}{last_latin[0]}"
+    hashed = hash_password(password)
 
-    # 🔁 Оновити email у таблиці users
-    cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
+    cur.execute("UPDATE users SET email = %s, password_hash = %s WHERE user_id = %s", (email, hashed, user_id))
 
     # 💾 Додати до students
     cur.execute("""

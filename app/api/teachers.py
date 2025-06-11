@@ -2,9 +2,14 @@ from flask import Blueprint, render_template, session, redirect, url_for, jsonif
 from app.dao.classes_dao import get_classes_by_teacher_id
 from app.services.class_service import get_students_by_class_id
 from app.utils.db import get_db
+from app.api.transliteration import transliterate
+import hashlib
 
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/teacher')
 api_teacher_bp = Blueprint('api_teacher', __name__, url_prefix='/api')
+
+def hash_password(plain_password):
+    return hashlib.sha256(plain_password.encode()).hexdigest()
 
 @teacher_bp.route('/dashboard')
 def dashboard():
@@ -88,9 +93,13 @@ def add_teacher():
     """, ("temp@school.com", "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f"))
     user_id = cur.fetchone()[0]
 
-    email = f"t{user_id}.{first.lower()}_{last.lower()}@school.com"
-    cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
+    first_latin = transliterate(first.lower())
+    last_latin = transliterate(last.lower())
+    email = f"t{user_id}.{first_latin}_{last_latin}@school.com"
+    password = f"s{user_id}.{first_latin[0]}{last_latin[0]}"
+    hashed = hash_password(password)
 
+    cur.execute("UPDATE users SET email = %s, password_hash = %s WHERE user_id = %s", (email, hashed, user_id))
     cur.execute("""
         INSERT INTO teachers (user_id, first_name, last_name, middle_name, salary, birth_date, hire_date)
         VALUES (%s, %s, %s, %s, %s, %s, %s)

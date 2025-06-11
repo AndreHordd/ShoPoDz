@@ -16,8 +16,13 @@ from app.utils.db import get_db
 from app.dao.students_dao import get_student_by_parent
 from app.models import Lesson, Homework, Grade, Attendance
 from app.dao.students_dao import get_student_by_id
+from app.api.transliteration import transliterate
+import hashlib
+
 parent_bp = Blueprint("parent", __name__)
 
+def hash_password(plain_password):
+    return hashlib.sha256(plain_password.encode()).hexdigest()
 
 
 
@@ -183,6 +188,7 @@ def get_parents():
     )
 
 
+
 @parent_bp.route("/api/parents", methods=["POST"])
 def add_parent():
     data = request.get_json()
@@ -194,30 +200,39 @@ def add_parent():
 
     conn = get_db()
     with conn.cursor() as cur:
-        # Створюємо користувача
-        cur.execute(
-            """
+        # Транслітерація
+        first_latin = transliterate(first_name.lower())
+        last_latin = transliterate(last_name.lower())
+
+        # Тимчасовий пароль і email
+        temp_password = "p0.ab"
+        temp_hash = hash_password(temp_password)
+        temp_email = f"p0.{first_latin}_{last_latin}@school.com"
+
+        # Створити користувача
+        cur.execute("""
             INSERT INTO users (email, password_hash, role)
-            VALUES (%s, %s, %s)
+            VALUES (%s, %s, 'parent')
             RETURNING user_id
-            """,
-            (
-                f"parent.{first_name.lower()}_{last_name.lower()}@school.com",
-                # sha-256 від "password"
-                "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
-                "parent",
-            ),
-        )
+        """, (temp_email, temp_hash))
         user_id = cur.fetchone()[0]
 
-        # Додаємо в таблицю parents
-        cur.execute(
-            """
+        # Справжній пароль і email
+        final_email = f"p{user_id}.{first_latin}_{last_latin}@school.com"
+        final_password = f"p{user_id}.{first_latin[0]}{last_latin[0]}"
+        final_hash = hash_password(final_password)
+
+        # Оновити користувача
+        cur.execute("""
+            UPDATE users SET email = %s, password_hash = %s WHERE user_id = %s
+        """, (final_email, final_hash, user_id))
+
+        # Додати в таблицю parents
+        cur.execute("""
             INSERT INTO parents (user_id, first_name, last_name, phone)
             VALUES (%s, %s, %s, %s)
-            """,
-            (user_id, first_name, last_name, phone),
-        )
+        """, (user_id, first_name, last_name, phone))
+
         conn.commit()
 
     return jsonify({"success": True})
