@@ -1143,8 +1143,7 @@ function showScheduleReport() {
                     <option disabled selected>-- Виберіть клас --</option>
                 </select>
             </label>
-            <button id="generate-pdf">📄 PDF</button>
-            <button id="generate-csv">📑 CSV</button>
+            <button id="open-preview">🖨️ Друкувати</button>
         </section>
     `;
 
@@ -1160,16 +1159,40 @@ function showScheduleReport() {
             });
         });
 
-    document.getElementById('generate-pdf').addEventListener('click', () => generateScheduleReport('pdf'));
-    document.getElementById('generate-csv').addEventListener('click', () => generateScheduleReport('csv'));
-}
+    document.getElementById('open-preview').addEventListener('click', () => {
+        const classId = document.getElementById('report-class-select').value;
+        if (!classId) {
+            alert("❗ Спочатку виберіть клас");
+            return;
+        }
 
-function generateScheduleReport(type) {
-    const classId = document.getElementById('report-class-select').value;
-    if (!classId) {
-        alert("❗ Спочатку виберіть клас");
-        return;
-    }
+        fetch(`/api/reports/schedule/preview/${classId}`)
+            .then(res => res.text())
+            .then(html => {
+                const printFrame = document.createElement('iframe');
+                printFrame.style.position = 'fixed';
+                printFrame.style.right = '0';
+                printFrame.style.bottom = '0';
+                printFrame.style.width = '0';
+                printFrame.style.height = '0';
+                printFrame.style.border = 'none';
+                document.body.appendChild(printFrame);
 
-    window.open(`/api/reports/schedule/${classId}?format=${type}`, '_blank');
+                printFrame.contentDocument.open();
+                printFrame.contentDocument.write(html);
+                printFrame.contentDocument.close();
+
+                printFrame.onload = () => {
+                    printFrame.contentWindow.focus();
+                    printFrame.contentWindow.print();
+                    setTimeout(() => {
+                        document.body.removeChild(printFrame);
+                    }, 1000);
+                };
+            })
+            .catch(err => {
+                console.error("❌ Помилка завантаження розкладу:", err);
+                alert("❌ Не вдалося згенерувати звіт.");
+            });
+    });
 }
