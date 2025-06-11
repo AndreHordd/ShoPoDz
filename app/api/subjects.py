@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.utils.db import get_db
+from psycopg2 import errors
 
 subject_bp = Blueprint('subject', __name__)
 
@@ -80,13 +81,16 @@ def update_subject(subject_id):
     return jsonify({"success": True})
 
 
-# 🔹 Видалити предмет
-@subject_bp.route("/api/subjects/<int:subject_id>", methods=["DELETE"])
+@subject_bp.route('/api/subjects/<int:subject_id>', methods=['DELETE'])
 def delete_subject(subject_id):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("DELETE FROM subjects WHERE subject_id = %s", (subject_id,))
-    conn.commit()
-    cur.close()
-    return jsonify({"success": True})
-
+    try:
+        cur.execute("DELETE FROM subjects WHERE subject_id = %s", (subject_id,))
+        conn.commit()
+        return jsonify({"success": True})
+    except errors.ForeignKeyViolation:
+        conn.rollback()
+        return jsonify({"success": False, "error": "Неможливо видалити предмет, бо він використовується у розкладі або викладачами."}), 400
+    finally:
+        cur.close()

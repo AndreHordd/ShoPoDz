@@ -1129,19 +1129,26 @@ function submitSubjectEdit(subjectId) {
     .catch(err => alert(err.message));
 }
 
-function deleteSubject(subjectId) {
-    if (!confirm("Ви дійсно хочете видалити предмет?")) return;
+function deleteSubject(id) {
+    if (!confirm("Ви впевнені, що хочете видалити цей предмет?")) return;
 
-    fetch(`/api/subjects/${subjectId}`, {
-        method: "DELETE"
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (!data.success) throw new Error("Не вдалося видалити");
-        showSubjects();
-    })
-    .catch(err => alert(err.message));
+    fetch(`/api/subjects/${id}`, { method: 'DELETE' })
+        .then(res => {
+            if (!res.ok) return res.json().then(err => Promise.reject(err));
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                loadSubjects();  // або showSubjectList();
+            } else {
+                alert("❌ " + (data.error || "Не вдалося видалити предмет"));
+            }
+        })
+        .catch(err => {
+            alert("❌ " + (err.error || "Сталася помилка при видаленні предмета"));
+        });
 }
+
 
 function showScheduleReport() {
     const content = document.getElementById('main-content');
