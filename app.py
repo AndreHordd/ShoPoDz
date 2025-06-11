@@ -11,6 +11,7 @@ from app.dao.lessons_dao import get_teacher_schedule                  # + ця �
 # ---------- blueprints ----------
 from app.api.auth           import auth_bp
 from app.api.teachers       import teacher_bp
+from app.api.teachers       import api_teacher_bp
 from app.api.admin          import admin_bp
 from app.api.students       import student_bp
 from app.api.parents        import parent_bp
@@ -45,6 +46,7 @@ def create_app() -> Flask:
     # blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(teacher_bp)
+    app.register_blueprint(api_teacher_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(student_bp)
     app.register_blueprint(parent_bp)
