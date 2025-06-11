@@ -627,7 +627,7 @@ function showUserManagement() {
             <h3><a href="#" onclick="loadUserList('parent')">Батьки</a></h3>
             <div id="parent-list"></div>
 
-            <h3><a href="#" onclick="loadUserList('teacher')">Викладачі</a></h3>
+            <h3><a href="#" onclick="loadUserList('teacher')">Вчителі</a></h3>
             <div id="teacher-list"></div>
         </section>
     `;
@@ -717,7 +717,7 @@ function showAddUserForm() {
                 <select id="user-type">
                     <option value="student">Учень</option>
                     <option value="parent">Батько/Мати</option>
-                    <option value="teacher">Викладач</option>
+                    <option value="teacher">Вчитель</option>
                 </select>
             </label><br>
             <label>Прізвище: <input id="user-lastname" type="text"></label><br>
@@ -851,7 +851,7 @@ function showEditUserForm(type, id) {
             fetch(`/api/subjects`).then(res => res.json())
         ]).then(([teachers, subjects]) => {
             const t = teachers.find(t => t.user_id === id);
-            if (!t) return alert("Викладача не знайдено");
+            if (!t) return alert("Вчителя не знайдено");
 
             const subjectOptions = subjects.map(s => `
                 <option value="${s.subject_id}" ${t.subject_ids.includes(s.subject_id) ? 'selected' : ''}>
@@ -861,7 +861,7 @@ function showEditUserForm(type, id) {
             const content = document.getElementById("main-content");
             content.innerHTML = `
                 <section class="dashboard-section">
-                    <h2>Редагувати викладача</h2>
+                    <h2>Редагувати вчителя</h2>
                     <label>Прізвище: <input id="edit-lastname" value="${t.last_name}"></label><br>
                     <label>Ім'я: <input id="edit-firstname" value="${t.first_name}"></label><br>
                     <label>По батькові: <input id="edit-middlename" value="${t.middle_name || ''}"></label><br>
