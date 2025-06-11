@@ -218,16 +218,44 @@ button:hover {
 }
 
 .btn-primary {
-    background-color: #1d4e89;
+    background-color: #16558F;
     color: white;
-    padding: 10px 18px;
     border: none;
-    border-radius: 6px;
+    padding: 12px 24px;
     font-size: 16px;
+    font-weight: 500;
+    border-radius: 10px;
     cursor: pointer;
-    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
 }
 
+.btn-primary:hover {
+    background-color: #123f6b;
+}
+
+.btn-secondary {
+    background-color: #16558F;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.btn-secondary:hover {
+    background-color: #123f6b;
+}
 .btn-small {
     padding: 6px 10px;
     font-size: 14px;
@@ -324,4 +352,179 @@ button:hover {
     width: 220px;
 }
 
+select#class-select {
+    font-size: 14px;
+    padding: 8px 12px;
+    min-width: 180px;
+    border-radius: 4px;
+}
+select#report-class-select {
+    font-size: 14px;
+    padding: 8px 12px;
+    min-width: 180px;
+    border-radius: 4px;
+}
 
+
+.subject-form-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.subject-form-card input {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    transition: border 0.2s ease-in-out;
+}
+
+.subject-form-card input:focus {
+    border-color: #3c8dbc;
+    outline: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+}
+
+
+
+.subject-form-card {
+    background-color: #ffffff;
+    padding: 30px 40px;
+    border-radius: 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 500px;
+    margin: 40px auto;
+    border-left: 6px solid #3c8dbc;
+}
+
+.subject-form-card h2 {
+    margin-bottom: 24px;
+    font-size: 24px;
+    color: #2b2b2b;
+}
+
+.subject-form-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.subject-form-card input,
+.subject-form-card select {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    transition: border 0.2s ease-in-out;
+}
+
+.subject-form-card input:focus,
+.subject-form-card select:focus {
+    border-color: #3c8dbc;
+    outline: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+}
+
+.form-actions button {
+    padding: 10px 18px;
+    font-size: 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: #3c8dbc;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.form-actions button:hover {
+    background-color: #30709c;
+}
+
+.pretty-form {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-left: 6px solid #2a9fd6;
+}
+
+.pretty-form label {
+    display: block;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.pretty-form input,
+.pretty-form select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.pretty-form .emoji {
+    margin-right: 6px;
+}
+
+.pretty-form h2 {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.button-row {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-start;
+    margin-top: 24px;
+}
+
+.button-row button {
+    font-size: 16px;
+    padding: 10px 20px;
+}
+.form-card {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 500px;
+    margin: 30px auto;
+}
+.form-card h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #0b3d91;
+}
+.form-card label {
+    display: block;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+.form-card input, .form-card select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-top: 4px;
+}

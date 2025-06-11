@@ -13,7 +13,7 @@ function showClassSelector() {
     const content = document.getElementById('main-content');
     content.innerHTML = `
         <section class="dashboard-section">
-            <h2>Оберіть клас</h2>
+            <h2>📋 Розклади</h2>
             <select id="class-select">
                 <option disabled selected>-- Виберіть клас --</option>
             </select>
@@ -381,18 +381,25 @@ function showAddClassForm() {
             }).join('');
 
             content.innerHTML = `
-                <section class="dashboard-section">
-                    <h2>Додати клас</h2>
-                    <label>Номер класу: <input id="class-number" type="number" placeholder="Наприклад, 10"></label><br><br>
-                    <label>Буква: <input id="subclass" type="text" placeholder="Наприклад, А" maxlength="1"></label><br><br>
-                    <label>Класний керівник:
-                        <select id="class-teacher-id">
-                            <option value="">-- Оберіть вчителя --</option>
-                            ${teacherOptions}
-                        </select>
-                    </label><br><br>
-                    <button onclick="addClass()">Зберегти</button>
-                    <button onclick="showClassManagement()">Назад</button>
+                <section class="dashboard-section subject-form-card">
+                    <h2>➕ Додати клас</h2>
+
+                    <label for="class-number">📌 Номер класу:</label>
+                    <input id="class-number" type="number" placeholder="Наприклад, 10">
+
+                    <label for="subclass">🅰️ Буква:</label>
+                    <input id="subclass" type="text" placeholder="Наприклад, А" maxlength="1">
+
+                    <label for="class-teacher-id">👩‍🏫 Класний керівник:</label>
+                    <select id="class-teacher-id">
+                        <option value="">-- Оберіть вчителя --</option>
+                        ${teacherOptions}
+                    </select>
+
+                    <div class="form-actions">
+                        <button class="btn-primary"onclick="addClass()">💾 Зберегти</button>
+                        <button class="btn-secondary" onclick="showClassManagement()">🔙 Назад</button>
+                    </div>
                 </section>
             `;
         });
@@ -434,18 +441,25 @@ function showEditClassForm(id, currentName, classTeacherId) {
             }).join('');
 
             content.innerHTML = `
-                <section class="dashboard-section">
-                    <h2>Редагувати клас</h2>
-                    <label>Номер класу: <input id="edit-class-number" value="${number}" type="number"></label><br><br>
-                    <label>Буква: <input id="edit-subclass" value="${subclass}" maxlength="1"></label><br><br>
-                    <label>Класний керівник:
-                        <select id="edit-class-teacher-id">
-                            <option value="">-- Оберіть вчителя --</option>
-                            ${teacherOptions}
-                        </select>
-                    </label><br><br>
-                    <button onclick="editClass(${id})">Зберегти</button>
-                    <button onclick="showClassManagement()">Назад</button>
+                <section class="dashboard-section subject-form-card">
+                    <h2>✏️ Редагувати клас</h2>
+
+                    <label for="edit-class-number">📌 Номер класу:</label>
+                    <input id="edit-class-number" value="${number}" type="number" placeholder="Наприклад, 5">
+
+                    <label for="edit-subclass">🅰️ Буква:</label>
+                    <input id="edit-subclass" value="${subclass}" type="text" maxlength="1" placeholder="Наприклад, А">
+
+                    <label for="edit-class-teacher-id">👩‍🏫 Класний керівник:</label>
+                    <select id="edit-class-teacher-id">
+                        <option value="">-- Оберіть вчителя --</option>
+                        ${teacherOptions}
+                    </select>
+
+                    <div class="form-actions">
+                        <button class="btn-primary"onclick="editClass(${id})">💾 Зберегти</button>
+                        <button class="btn-secondary" onclick="showClassManagement()">🔙 Назад</button>
+                    </div>
                 </section>
             `;
         });
@@ -496,7 +510,7 @@ function showAnnouncements() {
         .then(announcements => {
             let html = `
                 <section class="dashboard-section">
-                    <h2>Оголошення</h2>
+                    <h2>📣 Оголошення</h2>
                     <button class="btn-primary" onclick="showAddAnnouncementForm()">➕ Створити оголошення</button>
                     <div class="announcement-list">
             `;
@@ -529,13 +543,22 @@ function showAnnouncements() {
 function showAddAnnouncementForm() {
     const content = document.getElementById('main-content');
     content.innerHTML = `
-        <section class="dashboard-section">
-            <h2>Нове оголошення</h2>
-            <label>Заголовок: <input id="announcement-title"></label><br>
-            <label>Текст: <textarea id="announcement-text"></textarea></label><br>
-            <button onclick="addAnnouncement()">Зберегти</button>
-            <button onclick="showAnnouncements()">Назад</button>
-        </section>
+        <div class="form-card">
+            <h2>📣 Нове оголошення</h2>
+
+            <label>📝 Заголовок:
+                <input id="announcement-title" placeholder="Наприклад, Збори батьків">
+            </label>
+
+            <label>💬 Текст:
+                <textarea id="announcement-text" rows="5" placeholder="Введіть текст оголошення..." style="resize: vertical;"></textarea>
+            </label>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn-primary" onclick="addAnnouncement()">💾 Зберегти</button>
+                <button class="btn-secondary" onclick="showAnnouncements()">🔙 Назад</button>
+            </div>
+        </div>
     `;
 }
 
@@ -565,13 +588,22 @@ function addAnnouncement() {
 function showEditAnnouncementForm(id, currentTitle, currentText) {
     const content = document.getElementById('main-content');
     content.innerHTML = `
-        <section class="dashboard-section">
-            <h2>Редагування оголошення</h2>
-            <label>Заголовок: <input id="edit-title" value="${currentTitle}"></label><br>
-            <label>Текст: <textarea id="edit-text">${currentText}</textarea></label><br>
-            <button onclick="editAnnouncement(${id})">Зберегти</button>
-            <button onclick="showAnnouncements()">Назад</button>
-        </section>
+        <div class="form-card">
+            <h2>✏️ Редагування оголошення</h2>
+
+            <label>📝 Заголовок:
+                <input id="edit-title" value="${currentTitle}" placeholder="Заголовок оголошення">
+            </label>
+
+            <label>💬 Текст:
+                <textarea id="edit-text" rows="5" placeholder="Введіть новий текст оголошення...">${currentText}</textarea>
+            </label>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn-primary" onclick="editAnnouncement(${id})">💾 Зберегти</button>
+                <button class="btn-secondary" onclick="showAnnouncements()">🔙 Назад</button>
+            </div>
+        </div>
     `;
 }
 
@@ -619,19 +651,18 @@ let isTeacherOpen = false;
 
 function showUserManagement() {
     const content = document.getElementById('main-content');
-
     content.innerHTML = `
         <section class="dashboard-section">
-            <h2>Користувачі</h2>
-            <button class="btn-primary" onclick="showAddUserForm()">➕ Додати користувача</button>
+            <h2 style="color:#2c3e50; font-size: 25px;">👥 Користувачі</h2>
+            <button class="btn-primary" style="margin-bottom: 1rem;" onclick="showAddUserForm()">➕ Додати користувача</button>
 
-            <h3><a href="#" onclick="toggleStudentList()">Учні</a></h3>
+            <h3><a href="#" onclick="toggleStudentList()">👨‍🎓 Учні</a></h3>
             <div id="student-list"></div>
 
-            <h3><a href="#" onclick="toggleParentList()">Батьки</a></h3>
+            <h3><a href="#" onclick="toggleParentList()">👨‍👩‍👧‍👦 Батьки</a></h3>
             <div id="parent-list"></div>
 
-            <h3><a href="#" onclick="toggleTeacherList()">Викладачі</a></h3>
+            <h3><a href="#" onclick="toggleTeacherList()">📚 Викладачі</a></h3>
             <div id="teacher-list"></div>
         </section>
     `;
@@ -705,7 +736,7 @@ function showParentsByClass(classId, className) {
                         </li>
                     `).join('')}
                 </ul>
-                <button onclick="showParentClassList()">← Назад до класів</button>
+                <button onclick="showParentClassList()">🔙 Назад до класів</button>
             `;
         });
 }
@@ -748,7 +779,7 @@ function showStudentsByClass(classId, className) {
                         </li>
                     `).join('')}
                 </ul>
-                <button onclick="showClassList()">← Назад до класів</button>
+                <button onclick="showClassList()">🔙 Назад до класів</button>
             `;
         });
 }
@@ -789,21 +820,34 @@ function showAddUserForm() {
     const content = document.getElementById('main-content');
 
     content.innerHTML = `
-        <section class="dashboard-section">
-            <h2>Додати користувача</h2>
-            <label>Тип:
-                <select id="user-type">
-                    <option value="student">Учень</option>
-                    <option value="parent">Батько/Мати</option>
-                    <option value="teacher">Вчитель</option>
-                </select>
-            </label><br>
-            <label>Прізвище: <input id="user-lastname" type="text"></label><br>
-            <label>Ім’я: <input id="user-firstname" type="text"></label><br>
-            <div id="extra-fields"></div>
-            <button onclick="submitAddUser()">Зберегти</button>
-            <button onclick="showUserManagement()">Назад</button>
-        </section>
+        <div class="form-container">
+            <section class="dashboard-section pretty-form">
+                <h2><span class="emoji">➕</span> Додати користувача</h2>
+
+                <label><span class="emoji">🧍‍♂️</span> Тип:
+                    <select id="user-type">
+                        <option value="student">Учень</option>
+                        <option value="parent">Батько/Мати</option>
+                        <option value="teacher">Вчитель</option>
+                    </select>
+                </label>
+
+                <label><span class="emoji">📑</span> Прізвище:
+                    <input id="user-lastname" type="text" placeholder="Наприклад, Іваненко">
+                </label>
+
+                <label><span class="emoji">📑</span> Ім’я:
+                    <input id="user-firstname" type="text" placeholder="Наприклад, Оксана">
+                </label>
+
+                <div id="extra-fields"></div>
+
+                <div class="button-row">
+                    <button class="btn-primary" onclick="submitAddUser()">💾 Зберегти</button>
+                    <button class="btn-secondary" onclick="showUserManagement()">🔙 Назад</button>
+                </div>
+            </section>
+        </div>
     `;
 
     document.getElementById('user-type').addEventListener('change', updateExtraFields);
@@ -819,15 +863,25 @@ function updateExtraFields() {
             const classOptions = classes.map(c =>
                 `<option value="${c.id}">${c.class_number}-${c.subclass}</option>`).join('');
             extra.innerHTML = `
-                <label>По батькові: <input id="student-middlename"></label><br>
-                <label>Клас:
+                <label><span class="emoji">🪪</span> По батькові:
+                    <input id="student-middlename" type="text" placeholder="Наприклад, Миколаївна">
+                </label>
+
+                <label><span class="emoji">🏫</span> Клас:
                     <select id="student-class-id">${classOptions}</select>
-                </label><br>
-                <label>Номер телефону одного з батьків: <input id="student-parent-phone"></label><br>
+                </label>
+
+                <label><span class="emoji">📞</span> Телефон батьків:
+                    <input id="student-parent-phone" type="text" placeholder="+380XXXXXXXXX">
+                </label>
             `;
         });
     } else if (type === 'parent') {
-        extra.innerHTML = `<label>Телефон: <input id="parent-phone"></label>`;
+        extra.innerHTML = `
+            <label><span class="emoji">📞</span> Телефон:
+                <input id="parent-phone" type="text" placeholder="+380XXXXXXXXX">
+            </label>
+        `;
     } else if (type === 'teacher') {
         fetch('/api/subjects')
             .then(res => res.json())
@@ -835,14 +889,27 @@ function updateExtraFields() {
                 const subjectOptions = subjects.map(s =>
                     `<option value="${s.subject_id}">${s.title}</option>`).join('');
                 extra.innerHTML = `
-                    <label>По батькові: <input id="teacher-middle"></label><br>
-                    <label>Зарплата: <input id="teacher-salary" type="number" step="0.01"></label><br>
-                    <label>Дата народження: <input id="teacher-birth" type="date"></label><br>
-                    <label>Дата прийому: <input id="teacher-hire" type="date"></label><br>
-                    <label>Предмети (утримуйте Ctrl або ⌘ для вибору кількох):</label><br>
-                    <select id="teacher-subjects" multiple size="5" style="width: 300px; max-width: 100%;">
-                        ${subjectOptions}
-                    </select><br><br>
+                    <label><span class="emoji">🪪</span> По батькові:
+                        <input id="teacher-middle" type="text" placeholder="Наприклад, Віталійович">
+                    </label>
+
+                    <label><span class="emoji">💸</span> Зарплата:
+                        <input id="teacher-salary" type="number" step="0.01" placeholder="10000">
+                    </label>
+
+                    <label><span class="emoji">🎂</span> Дата народження:
+                        <input id="teacher-birth" type="date">
+                    </label>
+
+                    <label><span class="emoji">📅</span> Дата прийому:
+                        <input id="teacher-hire" type="date">
+                    </label>
+
+                    <label><span class="emoji">📚</span> Предмети (утримуйте Ctrl або ⌘):
+                        <select id="teacher-subjects" multiple size="5" style="width: 100%;">
+                            ${subjectOptions}
+                        </select>
+                    </label>
                 `;
             });
     } else {
@@ -923,6 +990,15 @@ function submitAddUser() {
 }
 
 function showEditUserForm(type, id) {
+    const content = document.getElementById("main-content");
+
+    const renderButtons = (submitFn) => `
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button class="btn-primary" onclick="${submitFn}">💾 Зберегти</button>
+            <button class="btn-secondary" onclick="showUserManagement()">🔙 Назад</button>
+        </div>
+    `;
+
     if (type === 'teacher') {
         Promise.all([
             fetch(`/api/teachers`).then(res => res.json()),
@@ -936,32 +1012,27 @@ function showEditUserForm(type, id) {
                     ${s.title}
                 </option>`).join('');
 
-            const content = document.getElementById("main-content");
             content.innerHTML = `
-                <section class="dashboard-section">
-                    <h2>Редагувати вчителя</h2>
-                    <label>Прізвище: <input id="edit-lastname" value="${t.last_name}"></label><br>
-                    <label>Ім'я: <input id="edit-firstname" value="${t.first_name}"></label><br>
-                    <label>По батькові: <input id="edit-middlename" value="${t.middle_name || ''}"></label><br>
-                    <label>Зарплата: <input id="teacher-salary" type="number" value="${t.salary}"></label><br>
-                    <label>Дата народження: <input id="teacher-birth" type="date" value="${t.birth_date}"></label><br>
-                    <label>Дата прийому: <input id="teacher-hire" type="date" value="${t.hire_date}"></label><br>
-                    <label>Предмети:</label><br>
-                    <select id="teacher-subjects" multiple size="5" style="width: 300px;">
+                <div class="form-card">
+                    <h2>✏️ Редагувати викладача</h2>
+                    <label>📛 Прізвище: <input id="edit-lastname" value="${t.last_name}"></label>
+                    <label>📛 Ім'я: <input id="edit-firstname" value="${t.first_name}"></label>
+                    <label>📛 По батькові: <input id="edit-middlename" value="${t.middle_name || ''}"></label>
+                    <label>💰 Зарплата: <input id="teacher-salary" type="number" value="${t.salary}"></label>
+                    <label>🎂 Дата народження: <input id="teacher-birth" type="date" value="${t.birth_date}"></label>
+                    <label>📆 Дата прийому: <input id="teacher-hire" type="date" value="${t.hire_date}"></label>
+                    <label>📘 Предмети:</label>
+                    <select id="teacher-subjects" multiple size="5" style="width: 100%;">
                         ${subjectOptions}
-                    </select><br><br>
-                    <button onclick="submitEditUser('teacher', ${id})">Зберегти</button>
-                    <button onclick="showUserManagement()">Назад</button>
-                </section>
+                    </select>
+                    ${renderButtons(`submitEditUser('teacher', ${id})`)}
+                </div>
             `;
         });
     } else {
         fetch(`/api/${type}s/${id}`)
             .then(res => res.json())
             .then(user => {
-                const content = document.getElementById('main-content');
-                let extraField = '';
-
                 if (type === 'student') {
                     fetch('/api/classes')
                         .then(res => res.json())
@@ -972,29 +1043,28 @@ function showEditUserForm(type, id) {
                             }).join('');
 
                             content.innerHTML = `
-                                <section class="dashboard-section">
-                                    <h2>Редагувати учня</h2>
-                                    <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
-                                    <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
-                                    <label>По батькові: <input id="edit-middlename" value="${user.middle_name || ''}"></label><br>
-                                    <label>Клас: <select id="edit-class-id">${options}</select></label><br>
-                                    <label>Телефон батьків: <input id="edit-parent-phone" value="${user.parent_phone || ''}"></label><br>
-                                    <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
-                                    <button onclick="showUserManagement()">Назад</button>
-                                </section>
+                                <div class="form-card">
+                                    <h2>✏️ Редагувати учня</h2>
+                                    <label>📛 Прізвище: <input id="edit-lastname" value="${user.last_name}"></label>
+                                    <label>📛 Ім’я: <input id="edit-firstname" value="${user.first_name}"></label>
+                                    <label>🪪 По батькові: <input id="edit-middlename" value="${user.middle_name || ''}"></label>
+                                    <label>🏫 Клас:
+                                        <select id="edit-class-id">${options}</select>
+                                    </label>
+                                    <label>📞 Телефон батьків: <input id="edit-parent-phone" value="${user.parent_phone || ''}"></label>
+                                    ${renderButtons(`submitEditUser('student', ${id})`)}
+                                </div>
                             `;
                         });
                 } else {
-                    extraField = `<label>Телефон: <input id="edit-phone" value="${user.phone}"></label><br>`;
                     content.innerHTML = `
-                        <section class="dashboard-section">
-                            <h2>Редагувати батька/матір</h2>
-                            <label>Прізвище: <input id="edit-lastname" value="${user.last_name}"></label><br>
-                            <label>Ім’я: <input id="edit-firstname" value="${user.first_name}"></label><br>
-                            ${extraField}
-                            <button onclick="submitEditUser('${type}', ${id})">Зберегти</button>
-                            <button onclick="showUserManagement()">Назад</button>
-                        </section>
+                        <div class="form-card">
+                            <h2>✏️ Редагувати батька/матір</h2>
+                            <label>📛 Прізвище: <input id="edit-lastname" value="${user.last_name}"></label>
+                            <label>📛 Ім’я: <input id="edit-firstname" value="${user.first_name}"></label>
+                            <label>📞 Телефон: <input id="edit-phone" value="${user.phone}"></label>
+                            ${renderButtons(`submitEditUser('parent', ${id})`)}
+                        </div>
                     `;
                 }
             });
@@ -1082,7 +1152,7 @@ function showSubjects() {
                 <section class="dashboard-section">
                   <h2>Предмети</h2>
                   <div style="margin-bottom: 1rem;">
-                    <button onclick="showAddSubjectForm()" style="background-color: #16558F; color: white; padding: 8px 16px; border-radius: 8px; border: none;">
+                    <button onclick="showAddSubjectForm()" class = "btn-primary">
                       ➕ Додати предмет
                     </button>
                   </div>
@@ -1121,13 +1191,22 @@ function showSubjects() {
 function showAddSubjectForm() {
     const content = document.getElementById("main-content");
     content.innerHTML = `
-        <section class="dashboard-section">
-            <h2>Додати предмет</h2>
-            <label>Назва: <input id="subject-title" type="text"></label><br>
-            <label>З класу: <input id="first-grade" type="number" min="1" max="11"></label><br>
-            <label>До класу: <input id="last-grade" type="number" min="1" max="11"></label><br>
-            <button onclick="submitNewSubject()">Зберегти</button>
-            <button onclick="showSubjects()">Назад</button>
+        <section class="dashboard-section subject-form-card">
+            <h2>📘 Додати новий предмет</h2>
+
+            <label for="subject-title">📌 Назва предмету:</label>
+            <input id="subject-title" type="text" placeholder="Наприклад, Геометрія" />
+
+            <label for="first-grade">📘 З класу:</label>
+            <input id="first-grade" type="number" min="1" max="11" placeholder="1" />
+
+            <label for="last-grade">📗 До класу:</label>
+            <input id="last-grade" type="number" min="1" max="11" placeholder="11" />
+
+            <div class="form-actions">
+                <button class="btn-primary" onclick="submitNewSubject()">💾 Зберегти</button>
+                <button class="btn-secondary" onclick="showSubjects()">🔙 Назад</button>
+            </div>
         </section>
     `;
 }
@@ -1168,13 +1247,22 @@ function editSubject(subjectId) {
 
             const content = document.getElementById("main-content");
             content.innerHTML = `
-                <section class="dashboard-section">
-                    <h2>Редагувати предмет</h2>
-                    <label>Назва: <input id="subject-title" type="text" value="${subject.title}"></label><br>
-                    <label>З класу: <input id="first-grade" type="number" value="${subject.first_teaching_grade}" min="1" max="11"></label><br>
-                    <label>До класу: <input id="last-grade" type="number" value="${subject.last_teaching_grade}" min="1" max="11"></label><br>
-                    <button onclick="submitSubjectEdit(${subject.subject_id})">Зберегти</button>
-                    <button onclick="showSubjects()">Назад</button>
+                <section class="dashboard-section subject-form-card">
+                    <h2>✏️ Редагувати предмет</h2>
+
+                    <label for="subject-title">📌 Назва предмету:</label>
+                    <input id="subject-title" type="text" value="${subject.title}" placeholder="Наприклад, Фізика" />
+
+                    <label for="first-grade">📘 З класу:</label>
+                    <input id="first-grade" type="number" min="1" max="11" value="${subject.first_teaching_grade}" />
+
+                    <label for="last-grade">📗 До класу:</label>
+                    <input id="last-grade" type="number" min="1" max="11" value="${subject.last_teaching_grade}" />
+
+                    <div class="form-actions">
+                        <button c lass="btn-primary" onclick="submitSubjectEdit(${subject.subject_id})">💾 Зберегти</button>
+                        <button class="btn-secondary" onclick="showSubjects()">🔙 Назад</button>
+                    </div>
                 </section>
             `;
         });
@@ -1227,12 +1315,11 @@ function deleteSubject(id) {
         });
 }
 
-
 function showScheduleReport() {
     const content = document.getElementById('main-content');
     content.innerHTML = `
         <section class="dashboard-section">
-            <h2>Звіт по розкладу</h2>
+            <h2>📇 Звіт по розкладу</h2>
             <label>Оберіть клас:
                 <select id="report-class-select">
                     <option disabled selected>-- Виберіть клас --</option>
