@@ -9,8 +9,8 @@
 
   <!-- Для emoji/іконок можна підключити FontAwesome (опціонально) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-  <style>
 
+    <style>
             body { background: #f4f6fa; margin:0; padding:0; }
     .container { display: flex; min-height: 100vh; }
     .sidebar {
@@ -23,6 +23,9 @@
     .menu li { margin-bottom: 1rem; }
     .menu li.active a, .menu li a:hover { background: #3877ec; color: #fff; border-radius: 8px; }
     .menu a { color: inherit; text-decoration: none; display: block; padding: 8px 12px; transition: 0.15s; }
+    </style>
+  <style>
+
 
     .messenger-content { flex:1; display: flex; }
     .messenger-sidebar {
@@ -110,7 +113,7 @@
 </head>
 <body>
 <div class="container">
-  <    <aside class="sidebar">
+      <aside class="sidebar">
            <a href="{{ url_for('teacher.dashboard') }}" style="color: inherit; text-decoration: none;">
      <h2>👨‍🏫 Вчитель </h2>
     </a>

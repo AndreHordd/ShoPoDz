@@ -159,39 +159,51 @@ function createSchedule(classId, className, classNumber, isEdit = false, existin
 
                 // предмети: всі (але якщо вибрано викладача — фільтруємо)
                 let subjectOptions = subjects;
-                if (selectedTeacher && teacherMap[selectedTeacher]) {
-                    subjectOptions = subjects.filter(s => teacherMap[selectedTeacher].subject_ids.includes(s.id));
-                }
+                    if (selectedTeacher && teacherMap[selectedTeacher]) {
+                        // Тільки предмети цього вчителя
+                        subjectOptions = subjects.filter(s => teacherMap[selectedTeacher].subject_ids.includes(s.id));
+                        // Але якщо вибране значення не в списку — додаємо його окремо!
+                        if (selectedSubject && !subjectOptions.some(s => s.id == selectedSubject)) {
+                            const missing = subjects.find(s => s.id == selectedSubject);
+                            if (missing) subjectOptions = [missing, ...subjectOptions];
+                        }
+                    }
+
 
                 const subjectSelect = `
-                    <select name="day_${i}_lesson_${lesson}" class="subject-select fixed-width" data-day="${i}" data-lesson="${lesson}">
-                        <option value="">—</option>
-                        ${subjectOptions.map(s => `
-                            <option value="${s.id}" ${s.id == selectedSubject ? 'selected' : ''}>${s.title}</option>
-                        `).join('')}
-                    </select>`;
+    <select name="day_${i}_lesson_${lesson}" class="subject-select fixed-width" data-day="${i}" data-lesson="${lesson}">
+        <option value="">—</option>
+        ${subjectOptions.map(s => `
+            <option value="${s.id}" ${s.id == selectedSubject ? 'selected' : ''}>${s.title}</option>
+        `).join('')}
+    </select>`;
 
                 // викладачі: всі (але якщо вибрано предмет — фільтруємо)
                 let teacherOptions = teachers;
-                if (selectedSubject) {
-                    teacherOptions = teachers.filter(t => t.subject_ids.includes(selectedSubject));
-                }
+if (selectedSubject) {
+    teacherOptions = teachers.filter(t => t.subject_ids.includes(selectedSubject));
+    if (selectedTeacher && !teacherOptions.some(t => t.user_id == selectedTeacher)) {
+        const missing = teachers.find(t => t.user_id == selectedTeacher);
+        if (missing) teacherOptions = [missing, ...teacherOptions];
+    }
+}
 
-                const teacherSelect = `
-                    <select name="teacher_day_${i}_lesson_${lesson}" class="teacher-select fixed-width" data-day="${i}" data-lesson="${lesson}">
-                        <option value="">—</option>
-                        ${teacherOptions.map(t => `
-                            <option value="${t.user_id}" ${t.user_id == selectedTeacher ? 'selected' : ''}>
-                                ${t.last_name} ${t.first_name} ${t.middle_name || ''}
-                            </option>
-                        `).join('')}
-                    </select>`;
+
+const teacherSelect = `
+    <select name="teacher_day_${i}_lesson_${lesson}" class="teacher-select fixed-width" data-day="${i}" data-lesson="${lesson}">
+        <option value="">—</option>
+        ${teacherOptions.map(t => `
+            <option value="${t.user_id}" ${t.user_id === selectedTeacher ? 'selected' : ''}>
+                ${t.last_name} ${t.first_name} ${t.middle_name || ''}
+            </option>
+        `).join('')}
+    </select>`;
 
                 const roomSelect = `
                     <select name="room_day_${i}_lesson_${lesson}" class="fixed-width">
                         <option value="">—</option>
                         ${rooms.map(r => `
-                            <option value="${r.id}" ${r.id == selectedRoom ? 'selected' : ''}>${r.number}</option>
+                            <option value="${r.id}" ${r.id === selectedRoom ? 'selected' : ''}>${r.number}</option>
                         `).join('')}
                     </select>`;
 

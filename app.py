@@ -25,10 +25,8 @@ from app.api.grades         import grade_bp
 from app.api.student_portal import student_portal_bp
 from app.api.messages import messages_bp, api_bp as api_messenger_bp
 from app.api.attendance import attendance_bp
-from app.api.attendance import attendance_bp
-from app.api.signatures import signatures_bp
 from app.api.reports import report_bp
-
+from app.api.signatures import signatures_bp
 # ---------------------------------------------------------------------------
 def add_days(date_obj, days):
     return date_obj + timedelta(days=days)
@@ -63,7 +61,6 @@ def create_app() -> Flask:
     app.register_blueprint(api_messenger_bp)
     app.register_blueprint(attendance_bp)
     app.register_blueprint(report_bp)
-
     # -------------------- teacher schedule --------------------
     @app.route("/teacher/schedule")
     def teacher_schedule():
