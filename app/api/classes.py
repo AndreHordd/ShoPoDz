@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.services.class_service import fetch_all_classes  # або як у тебе називається сервіс
 from app.utils.db import get_db
+from psycopg2 import errors
 
 class_bp = Blueprint('class', __name__)
 
@@ -53,14 +54,27 @@ def update_class(class_id):
     cur.close()
     return jsonify({"success": True})
 
-# Видалити клас
 @class_bp.route('/api/classes/<int:class_id>', methods=['DELETE'])
 def delete_class(class_id):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("DELETE FROM classes WHERE class_id = %s", (class_id,))
-    conn.commit()
-    cur.close()
-    return jsonify({"success": True})
+    try:
+        cur.execute("DELETE FROM classes WHERE class_id = %s", (class_id,))
+        conn.commit()
+        return jsonify({"success": True})
+    except errors.ForeignKeyViolation as e:
+        conn.rollback()
+        return jsonify({
+            "success": False,
+            "error": "Неможливо видалити клас, оскільки він має розклад або інших пов’язаних даних."
+        }), 400
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            "success": False,
+            "error": "Сталася помилка при видаленні класу."
+        }), 500
+    finally:
+        cur.close()
 
 

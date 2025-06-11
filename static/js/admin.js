@@ -475,7 +475,17 @@ function editClass(id) {
 function deleteClass(id) {
     if (confirm("Ви впевнені, що хочете видалити цей клас?")) {
         fetch(`/api/classes/${id}`, { method: 'DELETE' })
-            .then(() => showClassManagement());
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showClassManagement();
+                } else {
+                    alert('❌ Не вдалося видалити клас:\n' + (data.error || 'Невідома помилка.'));
+                }
+            })
+            .catch(err => {
+                alert('❌ Сталася помилка при запиті: ' + err.message);
+            });
     }
 }
 
