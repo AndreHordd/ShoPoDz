@@ -23,8 +23,7 @@ from app.api.homework       import homework_bp
 from app.api.grades         import grade_bp
 from app.api.student_portal import student_portal_bp
 from app.api.messages import messages_bp, api_bp as api_messenger_bp
-from app.api.attendance import attendance_bp
-from app.api.attendance import attendance_bp
+from app.api.reports import report_bp
 
 # ---------------------------------------------------------------------------
 def add_days(date_obj, days):
@@ -54,10 +53,10 @@ def create_app() -> Flask:
     app.register_blueprint(homework_bp)
     app.register_blueprint(grade_bp)
     app.register_blueprint(student_portal_bp)
+    app.register_blueprint(report_bp)
 
     app.register_blueprint(messages_bp)
     app.register_blueprint(api_messenger_bp)
-    app.register_blueprint(attendance_bp)
 
     # -------------------- teacher schedule --------------------
     @app.route("/teacher/schedule")
