@@ -5,7 +5,23 @@
     <title>👨‍🏫 Мої класи</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
     <script src="{{ url_for('static', filename='js/teacher_classes.js') }}" defer></script>
+        <style>
+            body { background: #f4f6fa; margin:0; padding:0; }
+    .container { display: flex; min-height: 100vh; }
+    .sidebar {
+      min-width: 210px; background: #233c61; color: #fff; padding: 32px 18px;
+      box-shadow: 2px 0 14px #2044880c;
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .sidebar h2 { font-size: 1.5rem; margin-bottom: 2.2rem; letter-spacing: 0.5px; }
+    .menu { list-style: none; padding: 0; margin: 0; width: 100%; }
+    .menu li { margin-bottom: 1rem; }
+    .menu li.active a, .menu li a:hover { background: #3877ec; color: #fff; border-radius: 8px; }
+    .menu a { color: inherit; text-decoration: none; display: block; padding: 8px 12px; transition: 0.15s; }
+    </style>
+
     <style>
+
         .class-button {
             background: #3177c6;
             color: #fff;
@@ -51,17 +67,22 @@
 <body>
 <div class="container">
     <aside class="sidebar">
-            <h2>👨‍🏫 Вчитель</h2>
+           <a href="{{ url_for('teacher.dashboard') }}" style="color: inherit; text-decoration: none;">
+     <h2>👨‍🏫 Вчитель </h2>
+    </a>
             <ul class="menu">
     <li><a href="{{ url_for('teacher_schedule') }}">📅 Мій розклад</a></li>
     <li><a href="{{ url_for('teacher.classes') }}">👨‍🎓 Мої класи</a></li>
     <li><a href="{{ url_for('grade.teacher_grades') }}">📊 Оцінки</a></li>
     <li><a href="{{ url_for('homework.teacher_homework') }}">📚 Домашні завдання</a></li>
     <li><a href="{{ url_for('attendance_bp.teacher_attendance') }}">✅ Відвідуваність</a></li>
-
-    <li><a href="#">📖 Журнал учня</a></li>
     <li><a href="{{ url_for('messenger.teacher_messenger') }}">📨 Месенджер</a></li>
-    <li><a href="#">🖊️ Підписи в щоденнику</a></li>
+    <li><a href="{{ url_for('signatures.teacher_signatures') }}">🖊️ Підписи в щоденнику</a></li>
+                <li style="bottom: 0;">
+      <a href="{{ url_for('auth.logout') }}" style="color: #fff; ">
+        🔓 Вийти
+      </a>
+    </li>
 </ul>
         </aside>
 
