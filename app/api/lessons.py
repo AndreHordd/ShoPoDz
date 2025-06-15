@@ -4,13 +4,11 @@ from app.utils.db import get_db
 lesson_bp = Blueprint('lesson', __name__)
 
 @lesson_bp.route('/api/lessons/create', methods=['POST'])
-@lesson_bp.route('/api/lessons/create', methods=['POST'])
 def create_lessons():
     class_id = request.form.get("class_id")
     if not class_id:
         return jsonify({"success": False, "error": "class_id is required"}), 400
 
-    # Мапа часу для уроків
     lesson_times = {
         1: ('08:00', '08:45'),
         2: ('08:55', '09:40'),
@@ -23,8 +21,8 @@ def create_lessons():
 
     lessons = []
     for day_index in range(5):
-        day = day_index + 1  # День з 1 по 5
-        for lesson_num in range(1, 8):  # Урок з 1 по 7
+        day = day_index + 1
+        for lesson_num in range(1, 8):
             subject_field = f"day_{day_index}_lesson_{lesson_num}"
             teacher_field = f"teacher_day_{day_index}_lesson_{lesson_num}"
             room_field = f"room_day_{day_index}_lesson_{lesson_num}"
@@ -38,15 +36,51 @@ def create_lessons():
                 teacher = int(teacher_id) if teacher_id and teacher_id.isdigit() else None
                 room = int(room_id) if room_id and room_id.isdigit() else None
                 start_time, end_time = lesson_times.get(lesson_num, ('08:00', '08:45'))
+
                 lessons.append((int(class_id), subj_id, teacher, room, day, start_time, end_time))
 
     conn = get_db()
     cur = conn.cursor()
 
-    # Видалити старі, якщо існують — для редагування
+    # 🧹 Очистити старі дані цього класу
     cur.execute("DELETE FROM lessons WHERE class_id = %s", (class_id,))
 
     for row in lessons:
+        class_id, subject_id, teacher_id, room_id, day, start_time, end_time = row
+
+        if teacher_id:
+            cur.execute("""
+                SELECT t.last_name, t.first_name, t.middle_name,
+                       c.class_number, c.subclass
+                FROM lessons l
+                JOIN teachers t ON t.user_id = l.teacher_id
+                JOIN classes c ON l.class_id = c.class_id
+                WHERE l.teacher_id = %s AND l.day = %s AND l.start_time = %s AND l.class_id != %s
+            """, (teacher_id, day, start_time, class_id))
+            conflict = cur.fetchone()
+
+            if conflict:
+                last_name, first_name, middle_name, class_number, subclass = conflict
+                teacher_name = f"{last_name} {first_name} {middle_name or ''}".strip()
+                class_name = f"{class_number}-{subclass}"
+
+                day_names = {
+                    1: 'Понеділок',
+                    2: 'Вівторок',
+                    3: 'Середа',
+                    4: 'Четвер',
+                    5: 'П’ятниця'
+                }
+
+                time_label = start_time[:5]
+                day_label = day_names.get(day, f"день {day}")
+
+                return jsonify({
+                    "success": False,
+                    "error": f"❗ {teacher_name} вже має урок у {class_name} в {day_label} о {time_label}. Змініть розклад."
+                }), 400
+
+        # ✅ Вставка уроку
         cur.execute("""
             INSERT INTO lessons (class_id, subject_id, teacher_id, room_id, day, start_time, end_time)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
